@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover" />
   <title>Flashcards SR</title>
   <style>
     :root {
@@ -38,11 +38,13 @@
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       -webkit-user-select: none;
+      touch-action: none;
     }
 
     html, body {
-      width: 100%;
-      height: 100%;
+      position: fixed;
+      width: 100vw;
+      height: 100vh;
       height: 100dvh;
       overflow: hidden;
       background-color: #020617;
@@ -55,7 +57,47 @@
       flex-direction: column;
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
-      position: relative;
+    }
+
+    #landscapeLock {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: #020617;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    #landscapeLock svg {
+      width: 48px;
+      height: 48px;
+      fill: var(--accent);
+      animation: rotateHint 1.8s infinite ease-in-out;
+    }
+
+    #landscapeLock p {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    @keyframes rotateHint {
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(-90deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    @media screen and (orientation: landscape) {
+      #landscapeLock {
+        display: flex;
+      }
     }
 
     #bgLayer {
@@ -67,9 +109,9 @@
       z-index: 0;
       transform: scale(1.02);
       filter: brightness(0.85);
+      pointer-events: none;
     }
 
-    /* TITLE SCREEN OVERLAY */
     #titleScreen {
       position: absolute;
       inset: 0;
@@ -184,7 +226,6 @@
       cursor: pointer;
     }
 
-    /* MAIN APP HEADER */
     header {
       flex-shrink: 0;
       padding: 12px 16px 10px 16px;
@@ -269,6 +310,7 @@
       padding-bottom: 2px;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
+      touch-action: pan-x;
     }
 
     .category-scroll::-webkit-scrollbar {
@@ -299,7 +341,6 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
-    /* CARD PLAY AREA */
     main {
       flex: 1;
       position: relative;
@@ -412,6 +453,7 @@
       overflow-y: auto;
       padding: 0 4px;
       text-shadow: 0 2px 6px rgba(0, 0, 0, 0.85);
+      touch-action: pan-y;
     }
 
     .card-footer-tip {
@@ -513,7 +555,6 @@
       color: var(--accent);
     }
 
-    /* FOOTER */
     footer {
       flex-shrink: 0;
       display: flex;
@@ -574,7 +615,6 @@
       font-weight: 500;
     }
 
-    /* INFO MODAL */
     #infoModal {
       position: absolute;
       inset: 0;
@@ -609,6 +649,7 @@
       gap: 16px;
       overflow-y: auto;
       box-shadow: 0 20px 45px rgba(0, 0, 0, 0.8);
+      touch-action: pan-y;
     }
 
     .info-header {
@@ -663,9 +704,15 @@
 </head>
 <body>
 
+  <div id="landscapeLock">
+    <svg viewBox="0 0 24 24">
+      <path d="M16 1H8C6.34 1 5 2.34 5 4v16c0 1.66 1.34 3 3 3h8c1.66 0 3-1.34 3-3V4c0-1.66-1.34-3-3-3zm1 18H7V5h10v14z"/>
+    </svg>
+    <p>Portrait Mode Only<br>Rotate Device</p>
+  </div>
+
   <div id="bgLayer"></div>
 
-  <!-- TITLE SCREEN -->
   <div id="titleScreen">
     <div class="title-header">
       <div class="brand-mark">OPERATIONAL DRILL SYSTEM</div>
@@ -691,7 +738,6 @@
     </div>
   </div>
 
-  <!-- MAIN TRAINER SCREEN -->
   <header>
     <div class="top-bar">
       <div class="app-title-group">
@@ -719,7 +765,6 @@
       <div class="action-indicator indicator-hard" id="indHard">HARD</div>
       <div class="action-indicator indicator-easy" id="indEasy">EASY</div>
       
-      <!-- QUESTION (FRONT) -->
       <div class="card-face card-front">
         <div class="card-meta">
           <span class="badge" id="frontBadge">CATEGORY</span>
@@ -729,7 +774,6 @@
         <div class="card-footer-tip">Tap anywhere to reveal answer</div>
       </div>
       
-      <!-- ANSWER (BACK) - GREEN -->
       <div class="card-face card-back">
         <div class="card-meta">
           <span class="badge" id="backBadge">CATEGORY</span>
@@ -761,7 +805,6 @@
     </button>
   </footer>
 
-  <!-- INFO MODAL -->
   <div id="infoModal">
     <div class="info-card">
       <div class="info-header">
@@ -772,10 +815,10 @@
       <div class="info-section">
         <h3>How to Operate</h3>
         <ul>
-          <li><strong>Quick Tap:</strong> Instantly flips between Question and Emerald Answer.</li>
-          <li><strong>Swipe Right (Easy):</strong> Marks item remembered; plays harmonic sweep; schedules graduation.</li>
-          <li><strong>Swipe Left (Hard):</strong> Marks recall lapse; plays rejection sweep; schedules for 10 min.</li>
-          <li><strong>Repulsive Drag:</strong> High-resistance kinetic physics simulate real mechanical feedback.</li>
+          <li><strong>Quick Tap:</strong> Flips between Question and Emerald Answer.</li>
+          <li><strong>Swipe Right (Easy):</strong> Marks item remembered; schedules graduation.</li>
+          <li><strong>Swipe Left (Hard):</strong> Marks recall lapse; schedules for 10 min.</li>
+          <li><strong>Fanfare:</strong> Audio signal triggers when clearing a category queue.</li>
         </ul>
       </div>
 
@@ -798,9 +841,43 @@
   </div>
 
   <script>
-    /* ==========================================================================
-       SYNTHESIZED WEB AUDIO API SOUND ENGINE
-       ========================================================================== */
+    // Full zoom prevention listeners
+    document.addEventListener('gesturestart', function(e) {
+      e.preventDefault();
+    });
+
+    document.addEventListener('gesturechange', function(e) {
+      e.preventDefault();
+    });
+
+    document.addEventListener('gestureend', function(e) {
+      e.preventDefault();
+    });
+
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(e) {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+
+    window.addEventListener('wheel', function(e) {
+      if (e.ctrlKey) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // Lock orientation via API where supported
+    async function enforcePortrait() {
+      if (screen.orientation && screen.orientation.lock) {
+        try {
+          await screen.orientation.lock('portrait');
+        } catch (err) {}
+      }
+    }
+
     let audioCtx = null;
 
     function initAudio() {
@@ -815,64 +892,8 @@
       }
     }
 
-    function playFlipSound() {
-      if (!audioCtx) return;
-      try {
-        const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        const filter = audioCtx.createBiquadFilter();
-
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(180, now);
-        osc.frequency.exponentialRampToValueAtTime(80, now + 0.22);
-
-        filter.type = "lowpass";
-        filter.frequency.setValueAtTime(350, now);
-        filter.frequency.linearRampToValueAtTime(100, now + 0.22);
-
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc.start(now);
-        osc.stop(now + 0.23);
-      } catch (e) {}
-    }
-
-    function playSwipeSound(isEasy) {
-      if (!audioCtx) return;
-      try {
-        const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-
-        osc.type = isEasy ? "triangle" : "sawtooth";
-
-        if (isEasy) {
-          osc.frequency.setValueAtTime(380, now);
-          osc.frequency.exponentialRampToValueAtTime(820, now + 0.18);
-          gain.gain.setValueAtTime(0.18, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-        } else {
-          osc.frequency.setValueAtTime(320, now);
-          osc.frequency.exponentialRampToValueAtTime(140, now + 0.2);
-          gain.gain.setValueAtTime(0.22, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-        }
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc.start(now);
-        osc.stop(now + (isEasy ? 0.19 : 0.21));
-      } catch (e) {}
-    }
-
     function playCompletionFanfare() {
+      initAudio();
       if (!audioCtx) return;
       try {
         const notes = [523.25, 659.25, 783.99, 1046.50];
@@ -896,9 +917,6 @@
       } catch (e) {}
     }
 
-    /* ==========================================================================
-       VECTOR BACKGROUNDS (IPHONE 9:19.5 RATIO)
-       ========================================================================== */
     const CATEGORY_BACKGROUNDS = {
       All: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" width="1170" height="2532"><defs><linearGradient id="allBg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%23020617"/><stop offset="35%" stop-color="%230f172a"/><stop offset="70%" stop-color="%231e1b4b"/><stop offset="100%" stop-color="%23090d16"/></linearGradient><radialGradient id="allGlow1" cx="20%" cy="25%" r="50%"><stop offset="0%" stop-color="%230284c7" stop-opacity="0.35"/><stop offset="100%" stop-color="%23000" stop-opacity="0"/></radialGradient><radialGradient id="allGlow2" cx="80%" cy="75%" r="60%"><stop offset="0%" stop-color="%23ea580c" stop-opacity="0.3"/><stop offset="100%" stop-color="%23000" stop-opacity="0"/></radialGradient></defs><rect width="1170" height="2532" fill="url(%23allBg)"/><rect width="1170" height="2532" fill="url(%23allGlow1)"/><rect width="1170" height="2532" fill="url(%23allGlow2)"/><g fill="none" stroke="%2338bdf8" stroke-width="1.5" opacity="0.12"><circle cx="585" cy="1266" r="320"/><circle cx="585" cy="1266" r="540"/><circle cx="585" cy="1266" r="760"/><line x1="585" y1="0" x2="585" y2="2532"/><line x1="0" y1="1266" x2="1170" y2="1266"/><line x1="0" y1="681" x2="1170" y2="1851"/><line x1="0" y1="1851" x2="1170" y2="681"/></g><path d="M-100,1900 C300,1650 850,2100 1270,1780 L1270,2532 L-100,2532 Z" fill="%23030712" opacity="0.75"/><circle cx="950" cy="400" r="16" fill="%2338bdf8" opacity="0.8" filter="blur(2px)"/><circle cx="200" cy="2100" r="22" fill="%23ea580c" opacity="0.7" filter="blur(2px)"/></svg>`,
 
@@ -913,9 +931,6 @@
       Structural: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" width="1170" height="2532"><defs><linearGradient id="flameGlow" x1="0%" y1="100%" x2="0%" y2="0%"><stop offset="0%" stop-color="%237c2d12"/><stop offset="35%" stop-color="%23c2410c"/><stop offset="65%" stop-color="%23ea580c"/><stop offset="100%" stop-color="%23020617"/></linearGradient><linearGradient id="smokeLayer" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%23000000" stop-opacity="0.95"/><stop offset="60%" stop-color="%230f172a" stop-opacity="0.7"/><stop offset="100%" stop-color="%23000000" stop-opacity="0"/></linearGradient></defs><rect width="1170" height="2532" fill="url(%23flameGlow)"/><rect width="1170" height="1450" fill="url(%23smokeLayer)"/><rect x="185" y="700" width="800" height="1832" fill="%23050505" opacity="0.88"/><g fill="%23ffedd5" opacity="0.85"><rect x="285" y="820" width="140" height="200" rx="8"/><rect x="515" y="820" width="140" height="200" rx="8"/><rect x="745" y="820" width="140" height="200" rx="8"/><rect x="285" y="1160" width="140" height="200" rx="8" fill="%23fdba74"/><rect x="515" y="1160" width="140" height="200" rx="8" fill="%23ea580c"/><rect x="745" y="1160" width="140" height="200" rx="8" fill="%23fb923c"/><rect x="285" y="1500" width="140" height="200" rx="8" fill="%239a3412"/><rect x="515" y="1500" width="140" height="200" rx="8" fill="%237c2d12"/><rect x="745" y="1500" width="140" height="200" rx="8" fill="%239a3412"/></g><line x1="100" y1="1050" x2="1070" y2="1050" stroke="%23ef4444" stroke-width="4" stroke-dasharray="16,8" opacity="0.75"/><text x="120" y="1035" fill="%23ef4444" font-family="-apple-system, sans-serif" font-size="28" font-weight="800" letter-spacing="4" opacity="0.75">NEUTRAL PLANE</text><g stroke="%2338bdf8" stroke-width="5" fill="none" opacity="0.5"><path d="M480,2100 Q585,1850 780,1800"/><path d="M495,2100 Q595,1860 790,1810"/></g></svg>`
     };
 
-    /* ==========================================================================
-       TECHNICAL CORE DATASET (50 DRILL ITEMS)
-       ========================================================================== */
     const INITIAL_DECK = [
       { id: "arff_1", cat: "ARFF", q: "ICAO Critical Area: What does TCA stand for, and how is it defined?", a: "Theoretical Critical Area: The boundary area surrounding an aircraft fuselage within which fire must be controlled to safeguard occupants." },
       { id: "arff_2", cat: "ARFF", q: "What is the standard maximum response time mandated by ICAO Annex 14 for the first responding vehicle to any point of the operational runway in optimum conditions?", a: "Not exceeding 2 minutes (and not exceeding 3 minutes to any other part of the movement area)." },
@@ -973,7 +988,7 @@
       { id: "str_10", cat: "Structural", q: "What is the operational purpose of an exterior 'Pencil' or 'Hit from the Yard' transitional attack?", a: "Discharge a straight solid stream through an exterior window against the ceiling to rapidly cool the compartment interior prior to offensive internal entry." }
     ];
 
-    const STORAGE_KEY = "sr_flashcards_deck_v8";
+    const STORAGE_KEY = "sr_flashcards_deck_v10";
 
     let deck = [];
     let currentCat = "All";
@@ -1145,9 +1160,7 @@
     }
 
     function flipCard() {
-      initAudio();
       triggerHaptic();
-      playFlipSound();
       isFlipped = !isFlipped;
       cardContainer.classList.remove("snapback-transition");
       cardContainer.classList.remove("active-press");
@@ -1185,10 +1198,8 @@
 
     function resolveCard(direction) {
       if (!currentCard) return;
-      initAudio();
       triggerHaptic();
       const quality = direction === "right" ? "easy" : "hard";
-      playSwipeSound(quality === "easy");
 
       const exitX = direction === "right" ? window.innerWidth + 200 : -window.innerWidth - 200;
 
@@ -1206,11 +1217,7 @@
       }, 240);
     }
 
-    /* ==========================================================================
-       PRECISION TOUCH & TAP DISCRIMINATOR
-       ========================================================================== */
     function handleStart(clientX, clientY) {
-      initAudio();
       isDragging = true;
       startX = clientX;
       startY = clientY;
@@ -1231,11 +1238,10 @@
       const rawDeltaX = currentX - startX;
       const rawDeltaY = currentY - startY;
 
-      if (Math.abs(rawDeltaX) > Math.abs(rawDeltaY) && e && e.cancelable) {
+      if (e && e.cancelable) {
         e.preventDefault();
       }
 
-      // Repulsive drag physics
       const dampedDeltaX = rawDeltaX * 0.72;
       const dampedDeltaY = rawDeltaY * 0.45;
       const rotationZ = dampedDeltaX * 0.14;
@@ -1264,13 +1270,11 @@
       const elapsed = Date.now() - startTime;
       const dist = Math.hypot(deltaX, deltaY);
 
-      // Dedicated tap detector: duration under 350ms with displacement under 20px
       if (dist < 20 && elapsed < 350) {
         flipCard();
         return;
       }
 
-      // Actionable swipes
       if (deltaX > 75) {
         resolveCard("right");
       } else if (deltaX < -75) {
@@ -1282,7 +1286,6 @@
       }
     }
 
-    // Touch event bindings
     cardContainer.addEventListener("touchstart", (e) => {
       const touch = e.touches[0];
       handleStart(touch.clientX, touch.clientY);
@@ -1299,7 +1302,6 @@
       handleEnd();
     });
 
-    // Mouse event bindings
     cardContainer.addEventListener("mousedown", (e) => {
       handleStart(e.clientX, e.clientY);
     });
@@ -1346,9 +1348,9 @@
       }
     });
 
-    // Navigation and Modals
     btnStartTraining.addEventListener("click", () => {
       initAudio();
+      enforcePortrait();
       titleScreen.classList.add("hidden");
     });
 
