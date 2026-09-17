@@ -12,9 +12,23 @@
       --easy-color: #22c55e;
       --hard-color: #ef4444;
       --radius: 20px;
-      --glass-surface: rgba(15, 23, 42, 0.68);
-      --glass-border: rgba(255, 255, 255, 0.18);
-      --glass-blur: blur(24px) saturate(180%);
+      --glass-blur: blur(24px) saturate(190%);
+      
+      /* Front Face (Question) - Cold / Deep Slate */
+      --q-surface: rgba(15, 23, 42, 0.78);
+      --q-border: rgba(148, 163, 184, 0.35);
+      --q-badge-bg: rgba(56, 189, 248, 0.16);
+      --q-badge-border: rgba(56, 189, 248, 0.4);
+      --q-badge-text: #38bdf8;
+      --q-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.75), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+
+      /* Back Face (Answer) - Warm Amber / Molten Gold */
+      --a-surface: rgba(45, 26, 14, 0.84);
+      --a-border: rgba(245, 158, 11, 0.6);
+      --a-badge-bg: rgba(245, 158, 11, 0.22);
+      --a-badge-border: rgba(245, 158, 11, 0.65);
+      --a-badge-text: #fbbf24;
+      --a-shadow: 0 24px 44px -10px rgba(245, 158, 11, 0.25), 0 20px 40px -10px rgba(0, 0, 0, 0.85), inset 0 1px 2px rgba(251, 191, 36, 0.4);
     }
 
     * {
@@ -64,7 +78,7 @@
       background: rgba(15, 23, 42, 0.45);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--glass-border);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.18);
       z-index: 20;
     }
 
@@ -95,7 +109,7 @@
       background: rgba(0, 0, 0, 0.45);
       padding: 4px 8px;
       border-radius: 6px;
-      border: 1px solid var(--glass-border);
+      border: 1px solid rgba(255, 255, 255, 0.18);
     }
 
     .mode-tag {
@@ -125,7 +139,7 @@
 
     .cat-btn {
       background: rgba(0, 0, 0, 0.4);
-      border: 1px solid var(--glass-border);
+      border: 1px solid rgba(255, 255, 255, 0.18);
       color: var(--text-muted);
       padding: 6px 14px;
       border-radius: 20px;
@@ -169,19 +183,27 @@
       touch-action: none;
       transform-style: preserve-3d;
       cursor: pointer;
+      will-change: transform;
+    }
+
+    /* Stiff, high-energy mechanical transitions */
+    .card-container.snapback-transition {
+      transition: transform 0.48s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .card-container.flip-transition {
-      transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.25, 1);
+    }
+
+    .card-container.active-press {
+      transform: scale(0.965);
     }
 
     .card-face {
       position: absolute;
       inset: 0;
-      background: var(--glass-surface);
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--glass-border);
       border-radius: var(--radius);
       padding: 22px 20px;
       display: flex;
@@ -189,12 +211,34 @@
       justify-content: space-between;
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
-      box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
     }
 
+    /* Front Face (Question) styling */
+    .card-front {
+      background: var(--q-surface);
+      border: 1px solid var(--q-border);
+      box-shadow: var(--q-shadow);
+    }
+
+    .card-front .badge {
+      color: var(--q-badge-text);
+      background: var(--q-badge-bg);
+      border: 1px solid var(--q-badge-border);
+    }
+
+    /* Back Face (Answer) styling */
     .card-back {
       transform: rotateY(180deg);
-      border-color: rgba(56, 189, 248, 0.45);
+      background: var(--a-surface);
+      border: 1px solid var(--a-border);
+      box-shadow: var(--a-shadow);
+    }
+
+    .card-back .badge {
+      color: var(--a-badge-text);
+      background: var(--a-badge-bg);
+      border: 1px solid var(--a-badge-border);
     }
 
     .card-meta {
@@ -208,12 +252,10 @@
       font-size: 0.7rem;
       font-weight: 800;
       letter-spacing: 0.08em;
-      color: var(--accent);
-      background: rgba(56, 189, 248, 0.16);
       padding: 4px 8px;
       border-radius: 6px;
-      border: 1px solid rgba(56, 189, 248, 0.3);
       text-transform: uppercase;
+      transition: all 0.3s ease;
     }
 
     .due-info {
@@ -256,7 +298,7 @@
       opacity: 0;
       pointer-events: none;
       z-index: 30;
-      will-change: opacity;
+      will-change: opacity, transform;
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
     }
@@ -284,10 +326,10 @@
       gap: 12px;
       text-align: center;
       padding: 28px 24px;
-      background: var(--glass-surface);
+      background: var(--q-surface);
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--glass-border);
+      border: 1px solid var(--q-border);
       border-radius: var(--radius);
       box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.6);
       max-width: 360px;
@@ -321,7 +363,7 @@
       border-radius: 10px;
       font-weight: 700;
       font-size: 0.8rem;
-      border: 1px solid var(--glass-border);
+      border: 1px solid rgba(255, 255, 255, 0.18);
       background: rgba(255, 255, 255, 0.1);
       color: var(--text-main);
       cursor: pointer;
@@ -343,7 +385,7 @@
       background: rgba(15, 23, 42, 0.45);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border-top: 1px solid var(--glass-border);
+      border-top: 1px solid rgba(255, 255, 255, 0.18);
       gap: 12px;
       width: 100%;
       max-width: 432px;
@@ -357,7 +399,7 @@
       border-radius: 12px;
       font-weight: 700;
       font-size: 0.9rem;
-      border: 1px solid var(--glass-border);
+      border: 1px solid rgba(255, 255, 255, 0.18);
       cursor: pointer;
       display: flex;
       flex-direction: column;
@@ -423,6 +465,7 @@
       <div class="action-indicator indicator-hard" id="indHard">HARD</div>
       <div class="action-indicator indicator-easy" id="indEasy">EASY</div>
       
+      <!-- QUESTION (FRONT) -->
       <div class="card-face card-front">
         <div class="card-meta">
           <span class="badge" id="frontBadge">CATEGORY</span>
@@ -432,6 +475,7 @@
         <div class="card-footer-tip">Tap to reveal answer</div>
       </div>
       
+      <!-- ANSWER (BACK) -->
       <div class="card-face card-back">
         <div class="card-meta">
           <span class="badge" id="backBadge">CATEGORY</span>
@@ -467,14 +511,14 @@
     const CATEGORY_BACKGROUNDS = {
       All: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" width="1170" height="2532"><defs><linearGradient id="allBg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%23020617"/><stop offset="35%" stop-color="%230f172a"/><stop offset="70%" stop-color="%231e1b4b"/><stop offset="100%" stop-color="%23090d16"/></linearGradient><radialGradient id="allGlow1" cx="20%" cy="25%" r="50%"><stop offset="0%" stop-color="%230284c7" stop-opacity="0.35"/><stop offset="100%" stop-color="%23000" stop-opacity="0"/></radialGradient><radialGradient id="allGlow2" cx="80%" cy="75%" r="60%"><stop offset="0%" stop-color="%23ea580c" stop-opacity="0.3"/><stop offset="100%" stop-color="%23000" stop-opacity="0"/></radialGradient></defs><rect width="1170" height="2532" fill="url(%23allBg)"/><rect width="1170" height="2532" fill="url(%23allGlow1)"/><rect width="1170" height="2532" fill="url(%23allGlow2)"/><g fill="none" stroke="%2338bdf8" stroke-width="1.5" opacity="0.12"><circle cx="585" cy="1266" r="320"/><circle cx="585" cy="1266" r="540"/><circle cx="585" cy="1266" r="760"/><line x1="585" y1="0" x2="585" y2="2532"/><line x1="0" y1="1266" x2="1170" y2="1266"/><line x1="0" y1="681" x2="1170" y2="1851"/><line x1="0" y1="1851" x2="1170" y2="681"/></g><path d="M-100,1900 C300,1650 850,2100 1270,1780 L1270,2532 L-100,2532 Z" fill="%23030712" opacity="0.75"/><circle cx="950" cy="400" r="16" fill="%2338bdf8" opacity="0.8" filter="blur(2px)"/><circle cx="200" cy="2100" r="22" fill="%23ea580c" opacity="0.7" filter="blur(2px)"/></svg>`,
 
-      ARFF: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" width="1170" height="2532"><defs><linearGradient id="arffSky" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%23020617"/><stop offset="45%" stop-color="%230f172a"/><stop offset="70%" stop-color="%233b1408"/><stop offset="100%" stop-color="%23050505"/></linearGradient><linearGradient id="runway" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%231e293b"/><stop offset="100%" stop-color="%23020617"/></linearGradient><radialGradient id="fireBurst" cx="50%" cy="58%" r="40%"><stop offset="0%" stop-color="%23f97316" stop-opacity="0.5"/><stop offset="40%" stop-color="%23dc2626" stop-opacity="0.25"/><stop offset="100%" stop-color="%23000" stop-opacity="0"/></radialGradient><linearGradient id="foamArch" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="%2338bdf8" stop-opacity="0.5"/><stop offset="70%" stop-color="%23bae6fd" stop-opacity="0.3"/><stop offset="100%" stop-color="%23ffffff" stop-opacity="0"/></linearGradient></defs><rect width="1170" height="2532" fill="url(%23arffSky)"/><rect width="1170" height="2532" fill="url(%23fireBurst)"/><polygon points="585,1300 0,2532 1170,2532" fill="url(%23runway)"/>\
-    <polygon points="585,1300 560,2532 610,2532" fill="%23facc15" opacity="0.4"/><g fill="%2338bdf8" opacity="0.6"><circle cx="585" cy="1300" r="4"/><circle cx="560" cy="1340" r="5"/><circle cx="610" cy="1340" r="5"/><circle cx="530" cy="1400" r="6"/><circle cx="640" cy="1400" r="6"/><circle cx="480" cy="1520" r="8"/><circle cx="690" cy="1520" r="8"/><circle cx="400" cy="1720" r="11"/><circle cx="770" cy="1720" r="11"/><circle cx="280" cy="2040" r="15"/><circle cx="890" cy="2040" r="15"/></g><path d="M585,1230 L550,1265 L480,1260 L450,1280 L560,1285 L585,1292 L610,1285 L720,1280 L690,1260 L620,1265 Z" fill="%2364748b" opacity="0.5"/><path d="M-80,2450 Q300,1400 680,1320" stroke="url(%23foamArch)" stroke-width="48" fill="none" stroke-linecap="round"/><path d="M-50,2430 Q310,1430 680,1320" stroke="%23ffffff" stroke-width="12" fill="none" opacity="0.6" stroke-linecap="round"/></svg>`,
+      ARFF: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" width="1170" height="2532"><defs><linearGradient id="arffSky" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%23020617"/><stop offset="45%" stop-color="%230f172a"/><stop offset="70%" stop-color="%233b1408"/><stop offset="100%" stop-color="%23050505"/></linearGradient><linearGradient id="runway" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%231e293b"/><stop offset="100%" stop-color="%23020617"/></linearGradient><radialGradient id="fireBurst" cx="50%" cy="58%" r="40%"><stop offset="0%" stop-color="%23f97316" stop-opacity="0.5"/><stop offset="40%" stop-color="%23dc2626" stop-opacity="0.25"/><stop offset="100%" stop-color="%23000" stop-opacity="0"/></radialGradient><linearGradient id="foamArch" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="%2338bdf8" stop-opacity="0.5"/><stop offset="70%" stop-color="%23bae6fd" stop-opacity="0.3"/><stop offset="100%" stop-color="%23ffffff" stop-opacity="0"/></linearGradient></defs><rect width="1170" height="2532" fill="url(%23arffSky)"/><rect width="1170" height="2532" fill="url(%23fireBurst)"/><polygon points="585,1300 0,2532 1170,2532" fill="url(%23runway)"/><polygon points="585,1300 560,2532 610,2532" fill="%23facc15" opacity="0.4"/><g fill="%2338bdf8" opacity="0.6"><circle cx="585" cy="1300" r="4"/><circle cx="560" cy="1340" r="5"/><circle cx="610" cy="1340" r="5"/><circle cx="530" cy="1400" r="6"/><circle cx="640" cy="1400" r="6"/><circle cx="480" cy="1520" r="8"/><circle cx="690" cy="1520" r="8"/><circle cx="400" cy="1720" r="11"/><circle cx="770" cy="1720" r="11"/><circle cx="280" cy="2040" r="15"/><circle cx="890" cy="2040" r="15"/></g><path d="M585,1230 L550,1265 L480,1260 L450,1280 L560,1285 L585,1292 L610,1285 L720,1280 L690,1260 L620,1265 Z" fill="%2364748b" opacity="0.5"/><path d="M-80,2450 Q300,1400 680,1320" stroke="url(%23foamArch)" stroke-width="48" fill="none" stroke-linecap="round"/><path d="M-50,2430 Q310,1430 680,1320" stroke="%23ffffff" stroke-width="12" fill="none" opacity="0.6" stroke-linecap="round"/></svg>`,
 
       BA: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" width="1170" height="2532"><defs><linearGradient id="darkVessel" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%23020617"/><stop offset="50%" stop-color="%230b1120"/><stop offset="100%" stop-color="%23020617"/></linearGradient><linearGradient id="torchBeam" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%23fef08a" stop-opacity="0.65"/><stop offset="35%" stop-color="%23eab308" stop-opacity="0.25"/><stop offset="100%" stop-color="%23ca8a04" stop-opacity="0"/></linearGradient><radialGradient id="smokeCloud" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="%23334155" stop-opacity="0.6"/><stop offset="60%" stop-color="%231e293b" stop-opacity="0.3"/><stop offset="100%" stop-color="%23000" stop-opacity="0"/></radialGradient></defs><rect width="1170" height="2532" fill="url(%23darkVessel)"/><circle cx="680" cy="950" r="500" fill="url(%23smokeCloud)"/><circle cx="380" cy="1450" r="620" fill="url(%23smokeCloud)"/><polygon points="120,2100 1170,720 1250,920 280,2250" fill="url(%23torchBeam)"/><circle cx="160" cy="2140" r="55" fill="%23fef08a" opacity="0.9"/><circle cx="160" cy="2140" r="160" fill="%23eab308" opacity="0.25"/><g fill="none" stroke="%2338bdf8" stroke-width="4" opacity="0.3" stroke-linecap="round"><circle cx="585" cy="520" r="160"/><path d="M585,400 L585,520 L680,560"/><path d="M460,520 A125,125 0 0,1 710,520" stroke="%2322c55e" stroke-width="8"/></g><path d="M-50,2200 C300,2100 800,2350 1250,2150" fill="none" stroke="%23ea580c" stroke-width="6" stroke-dasharray="24,16" opacity="0.7"/></svg>`,
 
       General: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" width="1170" height="2532"><defs><linearGradient id="genDark" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%23020617"/><stop offset="50%" stop-color="%230f172a"/><stop offset="100%" stop-color="%231e1b4b"/></linearGradient><radialGradient id="centerCore" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="%2338bdf8" stop-opacity="0.22"/><stop offset="100%" stop-color="%23000" stop-opacity="0"/></radialGradient></defs><rect width="1170" height="2532" fill="url(%23genDark)"/><circle cx="585" cy="1266" r="600" fill="url(%23centerCore)"/><g fill="none" stroke="%2338bdf8" opacity="0.2"><circle cx="585" cy="1266" r="180" stroke-width="2"/><circle cx="585" cy="1266" r="360" stroke-width="3" stroke-dasharray="16,12"/><circle cx="585" cy="1266" r="540" stroke-width="1.5"/><circle cx="585" cy="1266" r="720" stroke-width="2" stroke-dasharray="8,8"/><line x1="585" y1="200" x2="585" y2="2332" stroke-width="2"/><line x1="100" y1="1266" x2="1070" y2="1266" stroke-width="2"/></g><polygon points="585,1110 720,1344 450,1344" fill="none" stroke="%23f59e0b" stroke-width="6" opacity="0.6"/><line x1="585" y1="1180" x2="585" y2="1280" stroke="%23f59e0b" stroke-width="6" stroke-linecap="round" opacity="0.8"/><circle cx="585" cy="1310" r="5" fill="%23f59e0b" opacity="0.8"/><g stroke="%2364748b" stroke-width="2" opacity="0.25"><line x1="180" y1="400" x2="380" y2="400"/><line x1="280" y1="400" x2="280" y2="520"/><rect x="220" y="520" width="120" height="60" rx="8" fill="%230f172a"/><line x1="780" y1="400" x2="980" y2="400"/><line x1="880" y1="400" x2="880" y2="520"/><rect x="820" y="520" width="120" height="60" rx="8" fill="%230f172a"/></g></svg>`,
 
-      RTC: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" width="1170" height="2532"><defs><linearGradient id="asphalt" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%23030712"/><stop offset="40%" stop-color="%23090d16"/><stop offset="70%" stop-color="%23171717"/><stop offset="100%" stop-color="%230a0a0a"/></linearGradient><linearGradient id="emergencyStrobe" x1="0%" y1="50%" x2="100%" y2="50%"><stop offset="0%" stop-color="%232563eb" stop-opacity="0.6"/><stop offset="45%" stop-color="%231d4ed8" stop-opacity="0.1"/><stop offset="55%" stop-color="%23dc2626" stop-opacity="0.1"/><stop offset="100%" stop-color="%23ef4444" stop-opacity="0.6"/></linearGradient><linearGradient id="glassShatter" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%2338bdf8" stop-opacity="0.3"/><stop offset="100%" stop-color="%23ffffff" stop-opacity="0"/></linearGradient></defs><rect width="1170" height="2532" fill="url(%23asphalt)"/><polygon points="585,750 0,2532 1170,2532" fill="%23111827" opacity="0.7"/><line x1="585" y1="750" x2="585" y2="2532" stroke="%23eab308" stroke-width="14" stroke-dasharray="70,50" opacity="0.6"/><line x1="380" y1="1300" x2="0" y2="2532" stroke="%23ffffff" stroke-width="8" opacity="0.3"/><line x1="790" y1="1300" x2="1170" y2="2532" stroke="%23ffffff" stroke-width="8" opacity="0.3"/><rect y="820" width="1170" height="340" fill="url(%23emergencyStrobe)" filter="blur(30px)"/><g fill="none" stroke="%23f97316" stroke-width="4" opacity="0.65"><path d="M520,1540 L650,1540 L700,1650 L470,1650 Z"/><line x1="585" y1="1540" x2="585" y2="1650"/><line x1="470" y1="1650" x2="420" y2="1780"/><line x1="700" y1="1650" x2="750" y2="1780"/></g><g fill="url(%23glassShatter)" stroke="%2338bdf8" stroke-width="1" opacity="0.4"><polygon points="450,1720 510,1680 480,1750"/><polygon points="530,1740 600,1710 570,1780"/><polygon points="620,1700 680,1660 670,1740"/></g></svg>`,
+      RTC: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" width="1170" height="2532"><defs><linearGradient id="asphalt" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%23030712"/>\
+        <stop offset="40%" stop-color="%23090d16"/><stop offset="70%" stop-color="%23171717"/><stop offset="100%" stop-color="%230a0a0a"/></linearGradient><linearGradient id="emergencyStrobe" x1="0%" y1="50%" x2="100%" y2="50%"><stop offset="0%" stop-color="%232563eb" stop-opacity="0.6"/><stop offset="45%" stop-color="%231d4ed8" stop-opacity="0.1"/><stop offset="55%" stop-color="%23dc2626" stop-opacity="0.1"/><stop offset="100%" stop-color="%23ef4444" stop-opacity="0.6"/></linearGradient><linearGradient id="glassShatter" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%2338bdf8" stop-opacity="0.3"/><stop offset="100%" stop-color="%23ffffff" stop-opacity="0"/></linearGradient></defs><rect width="1170" height="2532" fill="url(%23asphalt)"/><polygon points="585,750 0,2532 1170,2532" fill="%23111827" opacity="0.7"/><line x1="585" y1="750" x2="585" y2="2532" stroke="%23eab308" stroke-width="14" stroke-dasharray="70,50" opacity="0.6"/><line x1="380" y1="1300" x2="0" y2="2532" stroke="%23ffffff" stroke-width="8" opacity="0.3"/><line x1="790" y1="1300" x2="1170" y2="2532" stroke="%23ffffff" stroke-width="8" opacity="0.3"/><rect y="820" width="1170" height="340" fill="url(%23emergencyStrobe)" filter="blur(30px)"/><g fill="none" stroke="%23f97316" stroke-width="4" opacity="0.65"><path d="M520,1540 L650,1540 L700,1650 L470,1650 Z"/><line x1="585" y1="1540" x2="585" y2="1650"/><line x1="470" y1="1650" x2="420" y2="1780"/><line x1="700" y1="1650" x2="750" y2="1780"/></g><g fill="url(%23glassShatter)" stroke="%2338bdf8" stroke-width="1" opacity="0.4"><polygon points="450,1720 510,1680 480,1750"/><polygon points="530,1740 600,1710 570,1780"/><polygon points="620,1700 680,1660 670,1740"/></g></svg>`,
 
       Structural: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" width="1170" height="2532"><defs><linearGradient id="flameGlow" x1="0%" y1="100%" x2="0%" y2="0%"><stop offset="0%" stop-color="%237c2d12"/><stop offset="35%" stop-color="%23c2410c"/><stop offset="65%" stop-color="%23ea580c"/><stop offset="100%" stop-color="%23020617"/></linearGradient><linearGradient id="smokeLayer" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%23000000" stop-opacity="0.95"/><stop offset="60%" stop-color="%230f172a" stop-opacity="0.7"/><stop offset="100%" stop-color="%23000000" stop-opacity="0"/></linearGradient></defs><rect width="1170" height="2532" fill="url(%23flameGlow)"/><rect width="1170" height="1450" fill="url(%23smokeLayer)"/><rect x="185" y="700" width="800" height="1832" fill="%23050505" opacity="0.88"/><g fill="%23ffedd5" opacity="0.85"><rect x="285" y="820" width="140" height="200" rx="8"/><rect x="515" y="820" width="140" height="200" rx="8"/><rect x="745" y="820" width="140" height="200" rx="8"/><rect x="285" y="1160" width="140" height="200" rx="8" fill="%23fdba74"/><rect x="515" y="1160" width="140" height="200" rx="8" fill="%23ea580c"/><rect x="745" y="1160" width="140" height="200" rx="8" fill="%23fb923c"/><rect x="285" y="1500" width="140" height="200" rx="8" fill="%239a3412"/><rect x="515" y="1500" width="140" height="200" rx="8" fill="%237c2d12"/><rect x="745" y="1500" width="140" height="200" rx="8" fill="%239a3412"/></g><line x1="100" y1="1050" x2="1070" y2="1050" stroke="%23ef4444" stroke-width="4" stroke-dasharray="16,8" opacity="0.75"/><text x="120" y="1035" fill="%23ef4444" font-family="-apple-system, sans-serif" font-size="28" font-weight="800" letter-spacing="4" opacity="0.75">NEUTRAL PLANE</text><g stroke="%2338bdf8" stroke-width="5" fill="none" opacity="0.5"><path d="M480,2100 Q585,1850 780,1800"/><path d="M495,2100 Q595,1860 790,1810"/></g></svg>`
     };
@@ -536,7 +580,7 @@
       { id: "str_10", cat: "Structural", q: "What is the operational purpose of an exterior 'Pencil' or 'Hit from the Yard' transitional attack?", a: "Discharge a straight solid stream through an exterior window against the ceiling to rapidly cool the compartment interior prior to offensive internal entry." }
     ];
 
-    const STORAGE_KEY = "sr_flashcards_deck_v4";
+    const STORAGE_KEY = "sr_flashcards_deck_v5";
 
     let deck = [];
     let currentCat = "All";
@@ -574,6 +618,12 @@
     const hardIntervalLabel = document.getElementById("hardIntervalLabel");
     const easyIntervalLabel = document.getElementById("easyIntervalLabel");
 
+    function triggerHaptic() {
+      if (navigator.vibrate) {
+        navigator.vibrate(15);
+      }
+    }
+
     function updateBackground(category) {
       const bg = CATEGORY_BACKGROUNDS[category] || CATEGORY_BACKGROUNDS.All;
       bgLayer.style.backgroundImage = `url("${bg}")`;
@@ -599,7 +649,7 @@
         interval: 0,
         reps: 0,
         efactor: 2.5,
-        dueDate: 0 // Ready immediately
+        dueDate: 0
       }));
     }
 
@@ -608,15 +658,15 @@
     }
 
     function formatTimeRemaining(ms) {
-      if (ms <= 0) return "Due Now";
+      if (ms <= 0) return "Ready";
       const totalSec = Math.floor(ms / 1000);
       const min = Math.floor(totalSec / 60);
       const hours = Math.floor(min / 60);
       const days = Math.floor(hours / 24);
-      if (days > 0) return `Due in ${days}d`;
-      if (hours > 0) return `Due in ${hours}h`;
-      if (min > 0) return `Due in ${min}m`;
-      return `Due in ${totalSec}s`;
+      if (days > 0) return `Due ${days}d`;
+      if (hours > 0) return `Due ${hours}h`;
+      if (min > 0) return `Due ${min}m`;
+      return `Due ${totalSec}s`;
     }
 
     function filterDeck() {
@@ -650,7 +700,7 @@
         const earliestCard = [...filtered].sort((a, b) => a.dueDate - b.dueDate)[0];
         if (earliestCard) {
           const waitTime = earliestCard.dueDate - now;
-          emptyMsg.textContent = `All cards are currently learning or graduated. Next card becomes due in ${formatTimeRemaining(waitTime)}.`;
+          emptyMsg.textContent = `All cards are learning or graduated. Next card due in ${formatTimeRemaining(waitTime)}.`;
         } else {
           emptyMsg.textContent = "No cards available in this category.";
         }
@@ -683,13 +733,17 @@
 
     function resetCardTransform() {
       cardContainer.classList.remove("flip-transition");
+      cardContainer.classList.remove("snapback-transition");
+      cardContainer.classList.remove("active-press");
       cardContainer.style.transform = isFlipped ? "rotateY(180deg)" : "rotateY(0deg)";
       indHard.style.opacity = 0;
       indEasy.style.opacity = 0;
     }
 
     function flipCard() {
+      triggerHaptic();
       isFlipped = !isFlipped;
+      cardContainer.classList.remove("snapback-transition");
       cardContainer.classList.add("flip-transition");
       cardContainer.style.transform = isFlipped ? "rotateY(180deg)" : "rotateY(0deg)";
     }
@@ -702,7 +756,7 @@
         reps = 0;
         interval = 1;
         efactor = Math.max(1.3, efactor - 0.2);
-        card.dueDate = now + 10 * 60 * 1000; // 10 minutes
+        card.dueDate = now + 10 * 60 * 1000;
       } else {
         if (reps === 0) {
           interval = 1;
@@ -724,11 +778,13 @@
 
     function resolveCard(direction) {
       if (!currentCard) return;
+      triggerHaptic();
       const quality = direction === "right" ? "easy" : "hard";
-      const exitX = direction === "right" ? window.innerWidth + 150 : -window.innerWidth - 150;
+      const exitX = direction === "right" ? window.innerWidth + 200 : -window.innerWidth - 200;
 
-      cardContainer.style.transition = "transform 0.22s ease-out, opacity 0.22s ease-out";
-      cardContainer.style.transform = `translateX(${exitX}px) rotate(${direction === "right" ? 20 : -20}deg)`;
+      cardContainer.classList.remove("snapback-transition");
+      cardContainer.style.transition = "transform 0.24s cubic-bezier(0.4, 0, 1, 1), opacity 0.24s ease-out";
+      cardContainer.style.transform = `translateX(${exitX}px) rotate(${direction === "right" ? 28 : -28}deg) scale(0.92)`;
       cardContainer.style.opacity = "0";
 
       calculateSR(currentCard, quality);
@@ -737,7 +793,7 @@
         cardContainer.style.transition = "none";
         cardContainer.style.opacity = "1";
         filterDeck();
-      }, 220);
+      }, 240);
     }
 
     function handleStart(clientX, clientY) {
@@ -747,7 +803,10 @@
       currentX = clientX;
       currentY = clientY;
       startTime = Date.now();
+      
       cardContainer.classList.remove("flip-transition");
+      cardContainer.classList.remove("snapback-transition");
+      cardContainer.classList.add("active-press");
     }
 
     function handleMove(clientX, clientY, e) {
@@ -755,19 +814,24 @@
       currentX = clientX;
       currentY = clientY;
 
-      const deltaX = currentX - startX;
-      const deltaY = currentY - startY;
+      const rawDeltaX = currentX - startX;
+      const rawDeltaY = currentY - startY;
 
-      if (Math.abs(deltaX) > Math.abs(deltaY) && e.cancelable) {
+      if (Math.abs(rawDeltaX) > Math.abs(rawDeltaY) && e.cancelable) {
         e.preventDefault();
       }
 
-      const rotation = deltaX * 0.05;
+      // Repulsive drag physics: high friction, exaggerated tilt and angular twist
+      const dampedDeltaX = rawDeltaX * 0.72;
+      const dampedDeltaY = rawDeltaY * 0.45;
+      const rotationZ = dampedDeltaX * 0.14;
+      const rotationX = -dampedDeltaY * 0.08;
       const flipBase = isFlipped ? 180 : 0;
-      cardContainer.style.transform = `translateX(${deltaX}px) rotateY(${flipBase}deg) rotateZ(${rotation}deg)`;
 
-      const swipeRatio = Math.min(Math.abs(deltaX) / 90, 1);
-      if (deltaX > 0) {
+      cardContainer.style.transform = `translateX(${dampedDeltaX}px) translateY(${dampedDeltaY}px) rotateY(${flipBase}deg) rotateZ(${rotationZ}deg) rotateX(${rotationX}deg) scale(0.965)`;
+
+      const swipeRatio = Math.min(Math.abs(rawDeltaX) / 80, 1);
+      if (rawDeltaX > 0) {
         indEasy.style.opacity = swipeRatio;
         indHard.style.opacity = 0;
       } else {
@@ -779,6 +843,7 @@
     function handleEnd() {
       if (!isDragging) return;
       isDragging = false;
+      cardContainer.classList.remove("active-press");
 
       const deltaX = currentX - startX;
       const deltaY = currentY - startY;
@@ -795,7 +860,9 @@
       } else if (deltaX < -75) {
         resolveCard("left");
       } else {
-        cardContainer.classList.add("flip-transition");
+        // Harsh, mechanical elastic snapback
+        triggerHaptic();
+        cardContainer.classList.add("snapback-transition");
         resetCardTransform();
       }
     }
