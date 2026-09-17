@@ -329,7 +329,6 @@
       transition: transform 0.48s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    /* Slowed, graceful physical card rotation */
     .card-container.flip-transition {
       transition: transform 0.85s cubic-bezier(0.25, 1, 0.5, 1);
     }
@@ -353,7 +352,6 @@
       transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
     }
 
-    /* Front Face (Question) styling */
     .card-front {
       background: var(--q-surface);
       border: 1px solid var(--q-border);
@@ -366,7 +364,6 @@
       border: 1px solid var(--q-badge-border);
     }
 
-    /* Back Face (Answer) - Green styling */
     .card-back {
       transform: rotateY(180deg);
       background: var(--a-surface);
@@ -729,7 +726,7 @@
           <span class="due-info" id="frontDueInfo"></span>
         </div>
         <div class="card-content" id="frontText">Question</div>
-        <div class="card-footer-tip">Tap to reveal answer</div>
+        <div class="card-footer-tip">Tap anywhere to reveal answer</div>
       </div>
       
       <!-- ANSWER (BACK) - GREEN -->
@@ -775,10 +772,10 @@
       <div class="info-section">
         <h3>How to Operate</h3>
         <ul>
-          <li><strong>Tap Card:</strong> Slowly turns the question over into an emerald green answer state.</li>
-          <li><strong>Swipe Right (Easy):</strong> Marks item remembered. Plays positive harmonic sweep; schedules to graduate.</li>
-          <li><strong>Swipe Left (Hard):</strong> Marks recall lapse. Plays lower rejection sweep; resets interval to 10 minutes.</li>
-          <li><strong>Audio Feedback:</strong> Real-time synthesized kinetic sounds for flip, swipe evaluation, and queue completion.</li>
+          <li><strong>Quick Tap:</strong> Instantly flips between Question and Emerald Answer.</li>
+          <li><strong>Swipe Right (Easy):</strong> Marks item remembered; plays harmonic sweep; schedules graduation.</li>
+          <li><strong>Swipe Left (Hard):</strong> Marks recall lapse; plays rejection sweep; schedules for 10 min.</li>
+          <li><strong>Repulsive Drag:</strong> High-resistance kinetic physics simulate real mechanical feedback.</li>
         </ul>
       </div>
 
@@ -878,7 +875,7 @@
     function playCompletionFanfare() {
       if (!audioCtx) return;
       try {
-        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        const notes = [523.25, 659.25, 783.99, 1046.50];
         notes.forEach((freq, idx) => {
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
@@ -976,7 +973,7 @@
       { id: "str_10", cat: "Structural", q: "What is the operational purpose of an exterior 'Pencil' or 'Hit from the Yard' transitional attack?", a: "Discharge a straight solid stream through an exterior window against the ceiling to rapidly cool the compartment interior prior to offensive internal entry." }
     ];
 
-    const STORAGE_KEY = "sr_flashcards_deck_v7";
+    const STORAGE_KEY = "sr_flashcards_deck_v8";
 
     let deck = [];
     let currentCat = "All";
@@ -1153,6 +1150,7 @@
       playFlipSound();
       isFlipped = !isFlipped;
       cardContainer.classList.remove("snapback-transition");
+      cardContainer.classList.remove("active-press");
       cardContainer.classList.add("flip-transition");
       cardContainer.style.transform = isFlipped ? "rotateY(180deg)" : "rotateY(0deg)";
     }
@@ -1208,6 +1206,9 @@
       }, 240);
     }
 
+    /* ==========================================================================
+       PRECISION TOUCH & TAP DISCRIMINATOR
+       ========================================================================== */
     function handleStart(clientX, clientY) {
       initAudio();
       isDragging = true;
@@ -1230,10 +1231,11 @@
       const rawDeltaX = currentX - startX;
       const rawDeltaY = currentY - startY;
 
-      if (Math.abs(rawDeltaX) > Math.abs(rawDeltaY) && e.cancelable) {
+      if (Math.abs(rawDeltaX) > Math.abs(rawDeltaY) && e && e.cancelable) {
         e.preventDefault();
       }
 
+      // Repulsive drag physics
       const dampedDeltaX = rawDeltaX * 0.72;
       const dampedDeltaY = rawDeltaY * 0.45;
       const rotationZ = dampedDeltaX * 0.14;
@@ -1262,11 +1264,13 @@
       const elapsed = Date.now() - startTime;
       const dist = Math.hypot(deltaX, deltaY);
 
-      if (dist < 8 && elapsed < 300) {
+      // Dedicated tap detector: duration under 350ms with displacement under 20px
+      if (dist < 20 && elapsed < 350) {
         flipCard();
         return;
       }
 
+      // Actionable swipes
       if (deltaX > 75) {
         resolveCard("right");
       } else if (deltaX < -75) {
@@ -1278,13 +1282,16 @@
       }
     }
 
+    // Touch event bindings
     cardContainer.addEventListener("touchstart", (e) => {
-      handleStart(e.touches[0].clientX, e.touches[0].clientY);
+      const touch = e.touches[0];
+      handleStart(touch.clientX, touch.clientY);
     }, { passive: true });
 
     window.addEventListener("touchmove", (e) => {
       if (isDragging) {
-        handleMove(e.touches[0].clientX, e.touches[0].clientY, e);
+        const touch = e.touches[0];
+        handleMove(touch.clientX, touch.clientY, e);
       }
     }, { passive: false });
 
@@ -1292,6 +1299,7 @@
       handleEnd();
     });
 
+    // Mouse event bindings
     cardContainer.addEventListener("mousedown", (e) => {
       handleStart(e.clientX, e.clientY);
     });
