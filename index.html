@@ -431,6 +431,7 @@
       background: var(--q-surface);
       border: 1px solid var(--q-border);
       box-shadow: var(--q-shadow);
+      z-index: 2;
     }
 
     .card-front .badge {
@@ -444,6 +445,7 @@
       background: var(--a-surface);
       border: 1px solid var(--a-border);
       box-shadow: var(--a-shadow);
+      z-index: 1;
     }
 
     .card-back .badge {
@@ -508,7 +510,7 @@
       margin: auto 0;
       word-wrap: break-word;
       white-space: pre-line;
-      max-height: 72%;
+      max-height: 68%;
       overflow-y: auto;
       padding: 0 4px;
       text-shadow: 0 2px 6px rgba(0, 0, 0, 0.85);
@@ -521,35 +523,37 @@
       align-items: center;
       width: 100%;
       padding-top: 8px;
+      gap: 12px;
     }
 
     .flip-btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 6px 14px;
+      padding: 8px 18px;
       border-radius: 20px;
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       color: var(--text-main);
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       cursor: pointer;
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+      pointer-events: auto;
     }
 
     .flip-btn:active {
-      background: rgba(255, 255, 255, 0.22);
-      transform: scale(0.96);
+      background: rgba(255, 255, 255, 0.28);
+      transform: scale(0.95);
     }
 
     .flip-btn svg {
-      width: 13px;
-      height: 13px;
+      width: 14px;
+      height: 14px;
       fill: currentColor;
     }
 
@@ -878,38 +882,43 @@
       <div class="action-indicator indicator-hard" id="indHard">HARD</div>
       <div class="action-indicator indicator-easy" id="indEasy">EASY</div>
       
+      <!-- FRONT FACE -->
       <div class="card-face card-front">
         <div class="card-meta">
           <span class="badge" id="frontBadge">CATEGORY</span>
           <div class="meta-right">
             <span class="due-info" id="frontDueInfo"></span>
-            <button class="speak-btn" id="btnSpeakFront" aria-label="Read Question">
+            <button class="speak-btn interactive-ui" id="btnSpeakFront" aria-label="Read Question">
               <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
             </button>
           </div>
         </div>
         <div class="card-content" id="frontText">Question</div>
         <div class="card-footer">
-          <button class="flip-btn" id="btnFlipCard" aria-label="Flip Card">
+          <button class="flip-btn interactive-ui" id="btnFlipCard" aria-label="Flip Card">
             <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
             Flip
           </button>
         </div>
       </div>
       
+      <!-- BACK FACE -->
       <div class="card-face card-back">
         <div class="card-meta">
           <span class="badge" id="backBadge">CATEGORY</span>
           <div class="meta-right">
             <span class="due-info" id="backDueInfo"></span>
-            <button class="speak-btn" id="btnSpeakBack" aria-label="Read Answer">
+            <button class="speak-btn interactive-ui" id="btnSpeakBack" aria-label="Read Answer">
               <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
             </button>
           </div>
         </div>
         <div class="card-content" id="backText">Answer</div>
         <div class="card-footer">
-          <div class="card-footer-tip">&larr; Hard &nbsp;|&nbsp; Easy &rarr;</div>
+          <button class="flip-btn interactive-ui" id="btnFlipBackCard" aria-label="Flip Back">
+            <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+            Flip Back
+          </button>
         </div>
       </div>
     </div>
@@ -962,7 +971,7 @@
       <div class="info-section">
         <h3>How to Operate</h3>
         <ul>
-          <li><strong>Flip Button:</strong> Rotates the question card to display the emerald answer side. Tap anywhere on the card to flip as well.</li>
+          <li><strong>Flip Button:</strong> Rotates the question card to display the answer. Bidirectional flip buttons appear on both faces.</li>
           <li><strong>Swipe Right (Easy):</strong> Marks item remembered; schedules graduation.</li>
           <li><strong>Swipe Left (Hard):</strong> Marks recall lapse; schedules for 10 min.</li>
           <li><strong>Fanfare:</strong> Audio signal triggers when clearing a category queue.</li>
@@ -1131,7 +1140,7 @@
       { id: "str_10", cat: "Structural", q: "What is the operational purpose of an exterior 'Pencil' or 'Hit from the Yard' transitional attack?", a: "Discharge a straight solid stream through an exterior window against the ceiling to rapidly cool the compartment interior prior to offensive internal entry." }
     ];
 
-    const STORAGE_KEY = "sr_flashcards_deck_v13";
+    const STORAGE_KEY = "sr_flashcards_deck_v14";
     const BACKUP_STORAGE_KEY = "sr_flashcards_backup_snapshot";
 
     let deck = [];
@@ -1183,6 +1192,7 @@
     const btnSpeakFront = document.getElementById("btnSpeakFront");
     const btnSpeakBack = document.getElementById("btnSpeakBack");
     const btnFlipCard = document.getElementById("btnFlipCard");
+    const btnFlipBackCard = document.getElementById("btnFlipBackCard");
 
     const btnLoadBank = document.getElementById("btnLoadBank");
     const btnExportData = document.getElementById("btnExportData");
@@ -1388,7 +1398,12 @@
       }, 240);
     }
 
-    function handleStart(clientX, clientY) {
+    function handleStart(clientX, clientY, target) {
+      // If clicking directly on interactive controls, bypass card dragging
+      if (target && target.closest && target.closest('.interactive-ui')) {
+        return;
+      }
+
       isDragging = true;
       startX = clientX;
       startY = clientY;
@@ -1436,13 +1451,6 @@
 
       const deltaX = currentX - startX;
       const deltaY = currentY - startY;
-      const elapsed = Date.now() - startTime;
-      const dist = Math.hypot(deltaX, deltaY);
-
-      if (dist < 20 && elapsed < 350) {
-        flipCard();
-        return;
-      }
 
       if (deltaX > 75) {
         resolveCard("right");
@@ -1455,9 +1463,10 @@
       }
     }
 
+    /* CARD LISTENERS */
     cardContainer.addEventListener("touchstart", (e) => {
       const touch = e.touches[0];
-      handleStart(touch.clientX, touch.clientY);
+      handleStart(touch.clientX, touch.clientY, e.target);
     }, { passive: true });
 
     window.addEventListener("touchmove", (e) => {
@@ -1470,7 +1479,7 @@
     window.addEventListener("touchend", () => { handleEnd(); });
 
     cardContainer.addEventListener("mousedown", (e) => {
-      handleStart(e.clientX, e.clientY);
+      handleStart(e.clientX, e.clientY, e.target);
     });
 
     window.addEventListener("mousemove", (e) => {
@@ -1479,18 +1488,26 @@
 
     window.addEventListener("mouseup", () => { handleEnd(); });
 
-    btnFlipCard.addEventListener("click", (e) => {
-      e.stopPropagation();
-      flipCard();
-    });
+    // Explicit Flip handlers
+    function setupInteractiveTrigger(element, callback) {
+      const execute = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        callback(e);
+      };
+      element.addEventListener("pointerdown", (e) => e.stopPropagation());
+      element.addEventListener("touchstart", (e) => e.stopPropagation(), { passive: true });
+      element.addEventListener("click", execute);
+    }
 
-    btnSpeakFront.addEventListener("click", (e) => {
-      e.stopPropagation();
+    setupInteractiveTrigger(btnFlipCard, () => flipCard());
+    setupInteractiveTrigger(btnFlipBackCard, () => flipCard());
+
+    setupInteractiveTrigger(btnSpeakFront, () => {
       if (currentCard) speakText(currentCard.q);
     });
 
-    btnSpeakBack.addEventListener("click", (e) => {
-      e.stopPropagation();
+    setupInteractiveTrigger(btnSpeakBack, () => {
       if (currentCard) speakText(currentCard.a);
     });
 
@@ -1556,6 +1573,9 @@
       if (e.target === infoModal) closeInfo();
     });
 
+    /* ==========================================================================
+       DATA IMPORT / EXPORT / QUESTION BANK HANDLERS
+       ========================================================================== */
     btnLoadBank.addEventListener("click", () => {
       fileImportMode = "bank";
       fileInput.value = "";
