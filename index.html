@@ -82,14 +82,32 @@
       text-shadow: 0 2px 4px rgba(0,0,0,0.6);
     }
 
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     .deck-stats {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--text-muted);
       font-variant-numeric: tabular-nums;
       background: rgba(0, 0, 0, 0.45);
-      padding: 3px 8px;
+      padding: 4px 8px;
       border-radius: 6px;
       border: 1px solid var(--glass-border);
+    }
+
+    .mode-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 4px 6px;
+      border-radius: 6px;
+      background: rgba(245, 158, 11, 0.25);
+      border: 1px solid rgba(245, 158, 11, 0.5);
+      color: #fcd34d;
+      display: none;
+      text-transform: uppercase;
     }
 
     .category-scroll {
@@ -179,8 +197,14 @@
       border-color: rgba(56, 189, 248, 0.45);
     }
 
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
     .badge {
-      align-self: flex-start;
       font-size: 0.7rem;
       font-weight: 800;
       letter-spacing: 0.08em;
@@ -190,6 +214,12 @@
       border-radius: 6px;
       border: 1px solid rgba(56, 189, 248, 0.3);
       text-transform: uppercase;
+    }
+
+    .due-info {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
     }
 
     .card-content {
@@ -251,9 +281,9 @@
       display: none;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       text-align: center;
-      padding: 30px 24px;
+      padding: 28px 24px;
       background: var(--glass-surface);
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
@@ -261,6 +291,7 @@
       border-radius: var(--radius);
       box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.6);
       max-width: 360px;
+      width: 100%;
     }
 
     .empty-state.active {
@@ -275,6 +306,33 @@
       font-size: 0.85rem;
       color: var(--text-muted);
       line-height: 1.4;
+    }
+
+    .empty-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .empty-btn {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .empty-btn-primary {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: var(--accent);
     }
 
     footer {
@@ -345,7 +403,10 @@
   <header>
     <div class="top-bar">
       <div class="app-title">Flashcards SR</div>
-      <div class="deck-stats" id="deckStats">Due: 0 / 0</div>
+      <div class="top-controls">
+        <span class="mode-tag" id="modeTag">Review Ahead</span>
+        <div class="deck-stats" id="deckStats">Due: 0 / 0</div>
+      </div>
     </div>
     <div class="category-scroll" id="categoryBar">
       <button class="cat-btn active" data-cat="All">All</button>
@@ -363,13 +424,19 @@
       <div class="action-indicator indicator-easy" id="indEasy">EASY</div>
       
       <div class="card-face card-front">
-        <span class="badge" id="frontBadge">CATEGORY</span>
+        <div class="card-meta">
+          <span class="badge" id="frontBadge">CATEGORY</span>
+          <span class="due-info" id="frontDueInfo"></span>
+        </div>
         <div class="card-content" id="frontText">Question</div>
         <div class="card-footer-tip">Tap to reveal answer</div>
       </div>
       
       <div class="card-face card-back">
-        <span class="badge" id="backBadge">CATEGORY</span>
+        <div class="card-meta">
+          <span class="badge" id="backBadge">CATEGORY</span>
+          <span class="due-info" id="backDueInfo"></span>
+        </div>
         <div class="card-content" id="backText">Answer</div>
         <div class="card-footer-tip">&larr; Hard &nbsp;|&nbsp; Easy &rarr;</div>
       </div>
@@ -377,27 +444,31 @@
 
     <div class="empty-state" id="emptyState">
       <h3>All Caught Up</h3>
-      <p>No cards due in this category. Change filter or return later.</p>
+      <p id="emptyMsg">All cards in this category are scheduled for later review.</p>
+      <div class="empty-actions">
+        <button class="empty-btn empty-btn-primary" id="btnReviewAhead">Practice Ahead (Cram Mode)</button>
+        <button class="empty-btn" id="btnResetTimers">Reset Category Timers</button>
+      </div>
     </div>
   </main>
 
   <footer>
     <button class="control-btn btn-hard" id="btnHard">
       Hard
-      <span>Next: 10m</span>
+      <span id="hardIntervalLabel">Next: 10m</span>
     </button>
     <button class="control-btn btn-easy" id="btnEasy">
       Easy
-      <span>Graduates</span>
+      <span id="easyIntervalLabel">Graduates</span>
     </button>
   </footer>
 
   <script>
-    // iPhone 9:19.5 aspect-ratio procedural vector backgrounds (1170x2532 equivalent space)
     const CATEGORY_BACKGROUNDS = {
       All: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" width="1170" height="2532"><defs><linearGradient id="allBg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%23020617"/><stop offset="35%" stop-color="%230f172a"/><stop offset="70%" stop-color="%231e1b4b"/><stop offset="100%" stop-color="%23090d16"/></linearGradient><radialGradient id="allGlow1" cx="20%" cy="25%" r="50%"><stop offset="0%" stop-color="%230284c7" stop-opacity="0.35"/><stop offset="100%" stop-color="%23000" stop-opacity="0"/></radialGradient><radialGradient id="allGlow2" cx="80%" cy="75%" r="60%"><stop offset="0%" stop-color="%23ea580c" stop-opacity="0.3"/><stop offset="100%" stop-color="%23000" stop-opacity="0"/></radialGradient></defs><rect width="1170" height="2532" fill="url(%23allBg)"/><rect width="1170" height="2532" fill="url(%23allGlow1)"/><rect width="1170" height="2532" fill="url(%23allGlow2)"/><g fill="none" stroke="%2338bdf8" stroke-width="1.5" opacity="0.12"><circle cx="585" cy="1266" r="320"/><circle cx="585" cy="1266" r="540"/><circle cx="585" cy="1266" r="760"/><line x1="585" y1="0" x2="585" y2="2532"/><line x1="0" y1="1266" x2="1170" y2="1266"/><line x1="0" y1="681" x2="1170" y2="1851"/><line x1="0" y1="1851" x2="1170" y2="681"/></g><path d="M-100,1900 C300,1650 850,2100 1270,1780 L1270,2532 L-100,2532 Z" fill="%23030712" opacity="0.75"/><circle cx="950" cy="400" r="16" fill="%2338bdf8" opacity="0.8" filter="blur(2px)"/><circle cx="200" cy="2100" r="22" fill="%23ea580c" opacity="0.7" filter="blur(2px)"/></svg>`,
 
-      ARFF: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" width="1170" height="2532"><defs><linearGradient id="arffSky" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%23020617"/><stop offset="45%" stop-color="%230f172a"/><stop offset="70%" stop-color="%233b1408"/><stop offset="100%" stop-color="%23050505"/></linearGradient><linearGradient id="runway" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%231e293b"/><stop offset="100%" stop-color="%23020617"/></linearGradient><radialGradient id="fireBurst" cx="50%" cy="58%" r="40%"><stop offset="0%" stop-color="%23f97316" stop-opacity="0.5"/><stop offset="40%" stop-color="%23dc2626" stop-opacity="0.25"/><stop offset="100%" stop-color="%23000" stop-opacity="0"/></radialGradient><linearGradient id="foamArch" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="%2338bdf8" stop-opacity="0.5"/><stop offset="70%" stop-color="%23bae6fd" stop-opacity="0.3"/><stop offset="100%" stop-color="%23ffffff" stop-opacity="0"/></linearGradient></defs><rect width="1170" height="2532" fill="url(%23arffSky)"/><rect width="1170" height="2532" fill="url(%23fireBurst)"/><polygon points="585,1300 0,2532 1170,2532" fill="url(%23runway)"/><polygon points="585,1300 560,2532 610,2532" fill="%23facc15" opacity="0.4"/><g fill="%2338bdf8" opacity="0.6"><circle cx="585" cy="1300" r="4"/><circle cx="560" cy="1340" r="5"/><circle cx="610" cy="1340" r="5"/><circle cx="530" cy="1400" r="6"/><circle cx="640" cy="1400" r="6"/><circle cx="480" cy="1520" r="8"/><circle cx="690" cy="1520" r="8"/><circle cx="400" cy="1720" r="11"/><circle cx="770" cy="1720" r="11"/><circle cx="280" cy="2040" r="15"/><circle cx="890" cy="2040" r="15"/></g><path d="M585,1230 L550,1265 L480,1260 L450,1280 L560,1285 L585,1292 L610,1285 L720,1280 L690,1260 L620,1265 Z" fill="%2364748b" opacity="0.5"/><path d="M-80,2450 Q300,1400 680,1320" stroke="url(%23foamArch)" stroke-width="48" fill="none" stroke-linecap="round"/><path d="M-50,2430 Q310,1430 680,1320" stroke="%23ffffff" stroke-width="12" fill="none" opacity="0.6" stroke-linecap="round"/></svg>`,
+      ARFF: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" width="1170" height="2532"><defs><linearGradient id="arffSky" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%23020617"/><stop offset="45%" stop-color="%230f172a"/><stop offset="70%" stop-color="%233b1408"/><stop offset="100%" stop-color="%23050505"/></linearGradient><linearGradient id="runway" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%231e293b"/><stop offset="100%" stop-color="%23020617"/></linearGradient><radialGradient id="fireBurst" cx="50%" cy="58%" r="40%"><stop offset="0%" stop-color="%23f97316" stop-opacity="0.5"/><stop offset="40%" stop-color="%23dc2626" stop-opacity="0.25"/><stop offset="100%" stop-color="%23000" stop-opacity="0"/></radialGradient><linearGradient id="foamArch" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="%2338bdf8" stop-opacity="0.5"/><stop offset="70%" stop-color="%23bae6fd" stop-opacity="0.3"/><stop offset="100%" stop-color="%23ffffff" stop-opacity="0"/></linearGradient></defs><rect width="1170" height="2532" fill="url(%23arffSky)"/><rect width="1170" height="2532" fill="url(%23fireBurst)"/><polygon points="585,1300 0,2532 1170,2532" fill="url(%23runway)"/>\
+    <polygon points="585,1300 560,2532 610,2532" fill="%23facc15" opacity="0.4"/><g fill="%2338bdf8" opacity="0.6"><circle cx="585" cy="1300" r="4"/><circle cx="560" cy="1340" r="5"/><circle cx="610" cy="1340" r="5"/><circle cx="530" cy="1400" r="6"/><circle cx="640" cy="1400" r="6"/><circle cx="480" cy="1520" r="8"/><circle cx="690" cy="1520" r="8"/><circle cx="400" cy="1720" r="11"/><circle cx="770" cy="1720" r="11"/><circle cx="280" cy="2040" r="15"/><circle cx="890" cy="2040" r="15"/></g><path d="M585,1230 L550,1265 L480,1260 L450,1280 L560,1285 L585,1292 L610,1285 L720,1280 L690,1260 L620,1265 Z" fill="%2364748b" opacity="0.5"/><path d="M-80,2450 Q300,1400 680,1320" stroke="url(%23foamArch)" stroke-width="48" fill="none" stroke-linecap="round"/><path d="M-50,2430 Q310,1430 680,1320" stroke="%23ffffff" stroke-width="12" fill="none" opacity="0.6" stroke-linecap="round"/></svg>`,
 
       BA: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" width="1170" height="2532"><defs><linearGradient id="darkVessel" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%23020617"/><stop offset="50%" stop-color="%230b1120"/><stop offset="100%" stop-color="%23020617"/></linearGradient><linearGradient id="torchBeam" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%23fef08a" stop-opacity="0.65"/><stop offset="35%" stop-color="%23eab308" stop-opacity="0.25"/><stop offset="100%" stop-color="%23ca8a04" stop-opacity="0"/></linearGradient><radialGradient id="smokeCloud" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="%23334155" stop-opacity="0.6"/><stop offset="60%" stop-color="%231e293b" stop-opacity="0.3"/><stop offset="100%" stop-color="%23000" stop-opacity="0"/></radialGradient></defs><rect width="1170" height="2532" fill="url(%23darkVessel)"/><circle cx="680" cy="950" r="500" fill="url(%23smokeCloud)"/><circle cx="380" cy="1450" r="620" fill="url(%23smokeCloud)"/><polygon points="120,2100 1170,720 1250,920 280,2250" fill="url(%23torchBeam)"/><circle cx="160" cy="2140" r="55" fill="%23fef08a" opacity="0.9"/><circle cx="160" cy="2140" r="160" fill="%23eab308" opacity="0.25"/><g fill="none" stroke="%2338bdf8" stroke-width="4" opacity="0.3" stroke-linecap="round"><circle cx="585" cy="520" r="160"/><path d="M585,400 L585,520 L680,560"/><path d="M460,520 A125,125 0 0,1 710,520" stroke="%2322c55e" stroke-width="8"/></g><path d="M-50,2200 C300,2100 800,2350 1250,2150" fill="none" stroke="%23ea580c" stroke-width="6" stroke-dasharray="24,16" opacity="0.7"/></svg>`,
 
@@ -409,7 +480,6 @@
     };
 
     const INITIAL_DECK = [
-      // ARFF (10)
       { id: "arff_1", cat: "ARFF", q: "ICAO Critical Area: What does TCA stand for, and how is it defined?", a: "Theoretical Critical Area: The boundary area surrounding an aircraft fuselage within which fire must be controlled to safeguard occupants." },
       { id: "arff_2", cat: "ARFF", q: "What is the standard maximum response time mandated by ICAO Annex 14 for the first responding vehicle to any point of the operational runway in optimum conditions?", a: "Not exceeding 2 minutes (and not exceeding 3 minutes to any other part of the movement area)." },
       { id: "arff_3", cat: "ARFF", q: "What hazard is posed by aircraft carbon-composite structures following severe thermal degradation?", a: "Respirable aerosolized carbon fibres (diameter < 3 µm) and toxic off-gassing requiring full BA and particulate PPE." },
@@ -421,7 +491,6 @@
       { id: "arff_9", cat: "ARFF", q: "What is the critical initial tactical task during a three-dimensional running fuel fire under a wing root?", a: "Discharge dry chemical powder or complementary media simultaneously with foam application to knock down the 3D flame envelope while foam secures ground spill." },
       { id: "arff_10", cat: "ARFF", q: "What visual indication signals that aircraft ballistic parachute recovery systems (CAPS/BRS) are present and dangerous?", a: "External warning placards indicating rocket-deployed parachute systems; rocket motor paths must be identified and avoided." },
 
-      // BA (Breathing Apparatus) (10)
       { id: "ba_1", cat: "BA", q: "What does TOC stand for during BA entry control procedures?", a: "Time of Commitment: The exact time the BA team connects to air supply and enters the risk area." },
       { id: "ba_2", cat: "BA", q: "How is the Turnaround Pressure calculated for a BA wearer under standard UK fire service guidance?", a: "Cylinder pressure at entry divided by 2, plus safety margin (half the working duration pressure)." },
       { id: "ba_3", cat: "BA", q: "What is the operational purpose and mandatory activation pressure of a cylinder Low Pressure Warning Device (whistle/pneumatic gauge)?", a: "Warns the wearer that reserve capacity is reached; typically activates at 55 bar (± 5 bar)." },
@@ -433,7 +502,6 @@
       { id: "ba_9", cat: "BA", q: "Under what specific circumstance can a BA team break physical or tactile contact during a compartment search?", a: "Only when operating with an intact, deployed guideline, within line-of-sight and verbal contact under clear visibility." },
       { id: "ba_10", cat: "BA", q: "What does DSU stand for in the context of personal BA apparatus?", a: "Distress Signal Unit (motion sensor sounding local audible/visual distress alarm if wearer is motionless for ~30 seconds)." },
 
-      // General (10)
       { id: "gen_1", cat: "General", q: "State the 3 universal operational priorities at any incident.", a: "1. Life Safety\n2. Incident Stabilization\n3. Property and Environmental Protection" },
       { id: "gen_2", cat: "General", q: "Under the UK Joint Emergency Services Interoperability Principles (JESIP), what does the M/ETHANE model mnemonic stand for?", a: "M - Major incident declared?\nE - Exact location\nT - Type of incident\nH - Hazards\nA - Access & egress\nN - Number of casualties\nE - Emergency services present/required" },
       { id: "gen_3", cat: "General", q: "What is the primary function of an inner cordon at a hazardous or structural incident?", a: "To establish an exclusion zone that restricts access strictly to specialist emergency response personnel with appropriate PPE." },
@@ -445,7 +513,6 @@
       { id: "gen_9", cat: "General", q: "What are the key elements of an Incident Commander's 'Ten-Pump' or sectorization plan?", a: "Splitting an expanding scene geographically (Sectors 1, 2, 3, 4) and functionally (e.g. Search, Water Supply, Logistics)." },
       { id: "gen_10", cat: "General", q: "What is the primary physiological mechanism of Heat Exhaustion versus Heat Stroke?", a: "Heat exhaustion: Excessive water/salt depletion with normal to moderately elevated core temp. Heat stroke: Failure of thermoregulatory mechanisms, core temp > 40°C, neuro impairment; life-threatening." },
 
-      // RTC (Road Traffic Collision) (10)
       { id: "rtc_1", cat: "RTC", q: "What are the standard dimensions for vehicle safety zones around undeployed airbags (5-10-20 rule)?", a: "5 inches from side airbags / curtains, 10 inches from driver frontal airbag, 20 inches from passenger frontal airbag." },
       { id: "rtc_2", cat: "RTC", q: "What is primary stabilization versus secondary stabilization at an RTC?", a: "Primary: Chocks and blocks to immediately arrest gross movement. Secondary: Struts, winches, and hydraulic tensioners to lock suspension and stabilize vehicle geometry completely." },
       { id: "rtc_3", cat: "RTC", q: "Why is 12V auxiliary battery disconnection critical on Electric Vehicles (EVs) during extrication?", a: "Disconnecting the 12V battery drops the high-voltage contactors (relays), isolating the 400V-800V high-voltage traction pack from the rest of the vehicle wiring." },
@@ -457,7 +524,6 @@
       { id: "rtc_9", cat: "RTC", q: "What thermal runaway indication requires continuous immersion or long-term high-volume water cooling on an EV?", a: "Off-gassing with jet whistling noises, rapid thermal rises on thermal imaging, sparks, or directional vapor plumes from the underfloor pack." },
       { id: "rtc_10", cat: "RTC", q: "What is the Golden Hour concept in RTC trauma management?", a: "The critical window within 60 minutes from time of injury to definitive surgical care in an operating theatre to maximize polytrauma survival." },
 
-      // Structural (10)
       { id: "str_1", cat: "Structural", q: "What are the key differences in signs between Flashover and Backdraft?", a: "Flashover: High heat, free-burning turbulent flames rolling across ceiling (rollover). Backdraft: Oxygen-depleted closed space, pulsing yellow-grey smoke under pressure, stained rattling glass, inward air sucking." },
       { id: "str_2", cat: "Structural", q: "What is the primary function of short pulsed branches during gas cooling in Compartment Fire Behavior Training (CFBT)?", a: "Produce fine water droplets that vaporize in the hot gas layer, cooling pyrolysis gases without impacting compartment boundary surfaces or causing thermal collapse." },
       { id: "str_3", cat: "Structural", q: "What is the definition of the Neutral Plane in a compartment fire?", a: "The horizontal boundary separating the hot, pressurized upper layer of smoke/gases from the lower layer of incoming cool air." },
@@ -470,13 +536,14 @@
       { id: "str_10", cat: "Structural", q: "What is the operational purpose of an exterior 'Pencil' or 'Hit from the Yard' transitional attack?", a: "Discharge a straight solid stream through an exterior window against the ceiling to rapidly cool the compartment interior prior to offensive internal entry." }
     ];
 
-    const STORAGE_KEY = "sr_flashcards_deck_v3";
+    const STORAGE_KEY = "sr_flashcards_deck_v4";
 
     let deck = [];
     let currentCat = "All";
     let activeQueue = [];
     let currentCard = null;
     let isFlipped = false;
+    let reviewAheadMode = false;
 
     let startX = 0;
     let startY = 0;
@@ -488,16 +555,24 @@
     const bgLayer = document.getElementById("bgLayer");
     const cardContainer = document.getElementById("cardContainer");
     const emptyState = document.getElementById("emptyState");
+    const emptyMsg = document.getElementById("emptyMsg");
     const frontText = document.getElementById("frontText");
     const backText = document.getElementById("backText");
     const frontBadge = document.getElementById("frontBadge");
     const backBadge = document.getElementById("backBadge");
+    const frontDueInfo = document.getElementById("frontDueInfo");
+    const backDueInfo = document.getElementById("backDueInfo");
     const indHard = document.getElementById("indHard");
     const indEasy = document.getElementById("indEasy");
     const deckStats = document.getElementById("deckStats");
+    const modeTag = document.getElementById("modeTag");
     const categoryBar = document.getElementById("categoryBar");
     const btnHard = document.getElementById("btnHard");
     const btnEasy = document.getElementById("btnEasy");
+    const btnReviewAhead = document.getElementById("btnReviewAhead");
+    const btnResetTimers = document.getElementById("btnResetTimers");
+    const hardIntervalLabel = document.getElementById("hardIntervalLabel");
+    const easyIntervalLabel = document.getElementById("easyIntervalLabel");
 
     function updateBackground(category) {
       const bg = CATEGORY_BACKGROUNDS[category] || CATEGORY_BACKGROUNDS.All;
@@ -524,7 +599,7 @@
         interval: 0,
         reps: 0,
         efactor: 2.5,
-        dueDate: Date.now()
+        dueDate: 0 // Ready immediately
       }));
     }
 
@@ -532,13 +607,36 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(deck));
     }
 
+    function formatTimeRemaining(ms) {
+      if (ms <= 0) return "Due Now";
+      const totalSec = Math.floor(ms / 1000);
+      const min = Math.floor(totalSec / 60);
+      const hours = Math.floor(min / 60);
+      const days = Math.floor(hours / 24);
+      if (days > 0) return `Due in ${days}d`;
+      if (hours > 0) return `Due in ${hours}h`;
+      if (min > 0) return `Due in ${min}m`;
+      return `Due in ${totalSec}s`;
+    }
+
     function filterDeck() {
       const now = Date.now();
       const filtered = deck.filter(c => currentCat === "All" || c.cat === currentCat);
-      const dueCards = filtered.filter(c => c.dueDate <= now);
+      const strictlyDue = filtered.filter(c => c.dueDate <= now);
 
-      activeQueue = dueCards.sort((a, b) => a.dueDate - b.dueDate);
-      deckStats.textContent = `Due: ${activeQueue.length} / ${filtered.length}`;
+      if (strictlyDue.length > 0) {
+        reviewAheadMode = false;
+        modeTag.style.display = "none";
+        activeQueue = strictlyDue.sort((a, b) => a.dueDate - b.dueDate);
+        deckStats.textContent = `Due: ${activeQueue.length} / ${filtered.length}`;
+      } else if (reviewAheadMode) {
+        modeTag.style.display = "block";
+        activeQueue = [...filtered].sort((a, b) => a.dueDate - b.dueDate);
+        deckStats.textContent = `Cram: ${activeQueue.length} / ${filtered.length}`;
+      } else {
+        activeQueue = [];
+        deckStats.textContent = `Due: 0 / ${filtered.length}`;
+      }
 
       if (activeQueue.length > 0) {
         currentCard = activeQueue[0];
@@ -548,6 +646,14 @@
         currentCard = null;
         cardContainer.style.display = "none";
         emptyState.classList.add("active");
+
+        const earliestCard = [...filtered].sort((a, b) => a.dueDate - b.dueDate)[0];
+        if (earliestCard) {
+          const waitTime = earliestCard.dueDate - now;
+          emptyMsg.textContent = `All cards are currently learning or graduated. Next card becomes due in ${formatTimeRemaining(waitTime)}.`;
+        } else {
+          emptyMsg.textContent = "No cards available in this category.";
+        }
         updateBackground(currentCat);
       }
     }
@@ -558,8 +664,18 @@
 
       frontBadge.textContent = card.cat;
       backBadge.textContent = card.cat;
+
+      const now = Date.now();
+      const dueStr = card.dueDate <= now ? "Ready" : formatTimeRemaining(card.dueDate - now);
+      frontDueInfo.textContent = `Rep: ${card.reps} (${dueStr})`;
+      backDueInfo.textContent = `Rep: ${card.reps} (${dueStr})`;
+
       frontText.innerText = card.q;
       backText.innerText = card.a;
+
+      hardIntervalLabel.textContent = "Next: 10m";
+      const nextDays = card.reps === 0 ? 1 : card.reps === 1 ? 6 : Math.round(card.interval * card.efactor);
+      easyIntervalLabel.textContent = `Next: ${nextDays}d`;
 
       cardContainer.style.display = "block";
       emptyState.classList.remove("active");
@@ -586,7 +702,7 @@
         reps = 0;
         interval = 1;
         efactor = Math.max(1.3, efactor - 0.2);
-        card.dueDate = now + 10 * 60 * 1000;
+        card.dueDate = now + 10 * 60 * 1000; // 10 minutes
       } else {
         if (reps === 0) {
           interval = 1;
@@ -715,11 +831,31 @@
     btnHard.addEventListener("click", () => resolveCard("left"));
     btnEasy.addEventListener("click", () => resolveCard("right"));
 
+    btnReviewAhead.addEventListener("click", () => {
+      reviewAheadMode = true;
+      filterDeck();
+    });
+
+    btnResetTimers.addEventListener("click", () => {
+      deck.forEach(c => {
+        if (currentCat === "All" || c.cat === currentCat) {
+          c.dueDate = 0;
+          c.reps = 0;
+          c.interval = 0;
+          c.efactor = 2.5;
+        }
+      });
+      saveDeck();
+      reviewAheadMode = false;
+      filterDeck();
+    });
+
     categoryBar.addEventListener("click", (e) => {
       if (e.target.classList.contains("cat-btn")) {
         categoryBar.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
         e.target.classList.add("active");
         currentCat = e.target.dataset.cat;
+        reviewAheadMode = false;
         filterDeck();
       }
     });
