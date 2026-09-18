@@ -100,6 +100,54 @@
       }
     }
 
+    /* SPLASH SCREEN OVERLAY */
+    #splashScreen {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background-color: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+
+    #splashScreen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    #splashVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    #skipSplashBtn {
+      position: absolute;
+      top: calc(env(safe-area-inset-top) + 16px);
+      right: 16px;
+      padding: 8px 14px;
+      border-radius: 20px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: var(--text-main);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      cursor: pointer;
+      z-index: 10001;
+    }
+
+    #skipSplashBtn:active {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
     #bgLayer {
       position: absolute;
       inset: 0;
@@ -467,25 +515,6 @@
       gap: 8px;
     }
 
-    .speak-btn {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: var(--text-main);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-
-    .speak-btn svg {
-      width: 14px;
-      height: 14px;
-      fill: currentColor;
-    }
-
     .badge {
       font-size: 0.7rem;
       font-weight: 800;
@@ -555,15 +584,6 @@
       width: 14px;
       height: 14px;
       fill: currentColor;
-    }
-
-    .card-footer-tip {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      text-align: center;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      opacity: 0.85;
     }
 
     .action-indicator {
@@ -812,6 +832,12 @@
     <p>Portrait Mode Only<br>Rotate Device</p>
   </div>
 
+  <!-- SPLASH SCREEN -->
+  <div id="splashScreen">
+    <button id="skipSplashBtn">Skip</button>
+    <video id="splashVideo" src="intro.mp4" playsinline muted autoplay></video>
+  </div>
+
   <div id="bgLayer"></div>
 
   <!-- TITLE SCREEN -->
@@ -888,9 +914,6 @@
           <span class="badge" id="frontBadge">CATEGORY</span>
           <div class="meta-right">
             <span class="due-info" id="frontDueInfo"></span>
-            <button class="speak-btn interactive-ui" id="btnSpeakFront" aria-label="Speak Question">
-              <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-            </button>
           </div>
         </div>
         <div class="card-content" id="frontText">Question</div>
@@ -908,9 +931,6 @@
           <span class="badge" id="backBadge">CATEGORY</span>
           <div class="meta-right">
             <span class="due-info" id="backDueInfo"></span>
-            <button class="speak-btn interactive-ui" id="btnSpeakBack" aria-label="Speak Answer">
-              <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-            </button>
           </div>
         </div>
         <div class="card-content" id="backText">Answer</div>
@@ -963,7 +983,6 @@
       <div class="info-section">
         <h3>Speech & Read-Aloud</h3>
         <ul>
-          <li><strong>Speaker Button (on card):</strong> Reads the visible face aloud.</li>
           <li><strong>Header Speaker Toggle:</strong> Toggles Auto-Speech mode on card display/flip.</li>
         </ul>
       </div>
@@ -1011,6 +1030,30 @@
       if (screen.orientation && screen.orientation.lock) {
         try { await screen.orientation.lock('portrait'); } catch (err) {}
       }
+    }
+
+    /* SPLASH SCREEN LIFECYCLE */
+    const splashScreen = document.getElementById("splashScreen");
+    const splashVideo = document.getElementById("splashVideo");
+    const skipSplashBtn = document.getElementById("skipSplashBtn");
+
+    function dismissSplash() {
+      if (!splashScreen || splashScreen.classList.contains("hidden")) return;
+      splashScreen.classList.add("hidden");
+      if (splashVideo) {
+        splashVideo.pause();
+        splashVideo.removeAttribute("src");
+        splashVideo.load();
+      }
+    }
+
+    if (splashVideo) {
+      splashVideo.addEventListener("ended", dismissSplash);
+      splashVideo.addEventListener("error", dismissSplash);
+      splashVideo.play().catch(() => dismissSplash());
+    }
+    if (skipSplashBtn) {
+      skipSplashBtn.addEventListener("click", dismissSplash);
     }
 
     let audioCtx = null;
@@ -1188,8 +1231,6 @@
     const btnCloseInfo = document.getElementById("btnCloseInfo");
     const btnHome = document.getElementById("btnHome");
     const btnTTSAuto = document.getElementById("btnTTSAuto");
-    const btnSpeakFront = document.getElementById("btnSpeakFront");
-    const btnSpeakBack = document.getElementById("btnSpeakBack");
     const btnFlipCard = document.getElementById("btnFlipCard");
     const btnFlipBackCard = document.getElementById("btnFlipBackCard");
 
@@ -1498,14 +1539,6 @@
 
     setupInteractiveTrigger(btnFlipCard, () => flipCard());
     setupInteractiveTrigger(btnFlipBackCard, () => flipCard());
-
-    setupInteractiveTrigger(btnSpeakFront, () => {
-      if (currentCard) speakText(currentCard.q);
-    });
-
-    setupInteractiveTrigger(btnSpeakBack, () => {
-      if (currentCard) speakText(currentCard.a);
-    });
 
     btnTTSAuto.addEventListener("click", () => {
       autoSpeechEnabled = !autoSpeechEnabled;
