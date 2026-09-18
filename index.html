@@ -3,7 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover" />
-  <title>FF Flashcards</title>
+  <title>Flashcards SR</title>
+
+  <!-- PWA & MOBILE APP METADATA -->
+  <meta name="application-name" content="Flashcards SR" />
+  <meta name="apple-mobile-web-app-title" content="Flashcards SR" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#020617" />
+
+  <!-- EMBEDDED PWA WEB APP MANIFEST -->
+  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Firefighter%20Spaced%20Repetition%22%2C%22short_name%22%3A%22Flashcards%20SR%22%2C%22description%22%3A%22High-retention%20spaced%20repetition%20engine%20for%20firefighting.%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%23020617%22%2C%22theme_color%22%3A%22%23020617%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Butf8%2C%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20512%20512%27%3E%3Crect%20width%3D%27512%27%20height%3D%27512%27%20rx%3D%27110%27%20fill%3D%27%23020617%27%2F%3E%3Cpath%20d%3D%27M256%2048C210%20148%20140%20220%20140%20310c0%2064%2052%20116%20116%20116s116-52%20116-116c0-70-52-132-84-182%200%200-8%2042-44%2062%2020-56%2016-116%2012-142z%27%20fill%3D%27%23ea580c%27%2F%3E%3Cpath%20d%3D%27M256%20180c-25%2055-64%2095-64%20145%200%2035%2029%2064%2064%2064s64-29%2064-64c0-38-29-73-46-101%200%200-4%2023-24%2034%2011-31%209-64%206-78z%27%20fill%3D%27%23facc15%27%2F%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D" />
+
+  <!-- EMBEDDED HIGH-RES APP ICONS -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='110' fill='%23020617'/><path d='M256 48C210 148 140 220 140 310c0 64 52 116 116 116s116-52 116-116c0-70-52-132-84-182 0 0-8 42-44 62 20-56 16-116 12-142z' fill='%23ea580c'/><path d='M256 180c-25 55-64 95-64 145 0 35 29 64 64 64s64-29 64-64c0-38-29-73-46-101 0 0-4 23-24 34 11-31 9-64 6-78z' fill='%23facc15'/></svg>" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='110' fill='%23020617'/><path d='M256 48C210 148 140 220 140 310c0 64 52 116 116 116s116-52 116-116c0-70-52-132-84-182 0 0-8 42-44 62 20-56 16-116 12-142z' fill='%23ea580c'/><path d='M256 180c-25 55-64 95-64 145 0 35 29 64 64 64s64-29 64-64c0-38-29-73-46-101 0 0-4 23-24 34 11-31 9-64 6-78z' fill='%23facc15'/></svg>" />
+
   <style>
     :root {
       --text-main: #f8fafc;
@@ -1011,6 +1027,29 @@
   </div>
 
   <script>
+    /* PWA SERVICE WORKER INLINE REGISTRATION */
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        const swCode = `
+          const CACHE_NAME = 'sr-flashcards-v1';
+          self.addEventListener('install', (e) => {
+            self.skipWaiting();
+          });
+          self.addEventListener('activate', (e) => {
+            e.waitUntil(clients.claim());
+          });
+          self.addEventListener('fetch', (e) => {
+            e.respondWith(
+              fetch(e.request).catch(() => caches.match(e.request))
+            );
+          });
+        `;
+        const blob = new Blob([swCode], { type: 'application/javascript' });
+        const swUrl = URL.createObjectURL(blob);
+        navigator.serviceWorker.register(swUrl).catch(() => {});
+      });
+    }
+
     document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
     document.addEventListener('gesturechange', function(e) { e.preventDefault(); });
     document.addEventListener('gestureend', function(e) { e.preventDefault(); });
