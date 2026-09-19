@@ -1,36 +1,70 @@
 # Firefighter Spaced Repetition (Flashcards SR)
 
-A standalone, mobile-first Progressive Web App (PWA) designed for high-retention technical study across critical operational firefighting disciplines. The application executes a modified SuperMemo SM-2 algorithmic scheduling model directly in the browser with zero external dependencies.
+A standalone, mobile-first Progressive Web App (PWA) built for high-retention firefighting revision. Uses a modified SuperMemo SM-2 algorithm to schedule reviews locally in the browser with zero external dependencies.
 
 ---
 
 ## Features
 
-- **Algorithmic Spaced Repetition:** Dynamic SM-2 scheduling engine adjusting intervals and Easiness Factors ($EF$) based on binary active recall outcomes (`Easy` vs. `Hard`).
-- **Zero-Dependency Architecture:** Single-file distribution containing embedded SVG vector assets, base64 Web App Manifest, offline Service Worker, and styling.
-- **Touch & Gesture Physics:** Multi-axis 3D card gestures supporting tilt dampening, threshold drag-to-rate swipes, and 3D card flipping.
-- **Auditory Feedback & Speech Synthesis:** Web Speech API integration for automatic text-to-speech readouts and Web Audio API synthesized completion chimes.
-- **Client-Side Persistence:** Instant synchronization to `localStorage` on every review, automated snapshot backups upon queue completion, and full JSON import/export routines.
-- **Orientation Control:** Automatic lock to portrait viewport with an integrated screen-rotation safeguard.
+- **Spaced Repetition:** Automatic review scheduling based on recall difficulty.
+- **Single-File Architecture:** HTML, CSS, JavaScript, manifest, and SVG assets in one file.
+- **Gesture Controls:** Touch swipe (left for Hard, right for Easy) and 3D card flipping.
+- **Speech & Audio:** Optional auto text-to-speech for cards and audio fanfare on queue completion.
+- **Local Persistence:** Automatic saves to `localStorage` plus manual JSON backup/restore.
+- **Portrait Enforced:** Built-in lock overlay for mobile displays.
 
 ---
 
-## Core Architecture & Spaced Repetition Engine
+## The Spaced Repetition Logic
 
-The engine modifies the standard SuperMemo SM-2 algorithm to streamline reviews into a binary interface: **Hard** (Lapse/Fail) and **Easy** (Pass/Recall).
+Cards are rated using two options:
 
-### State Model
+- **Easy (Pass):**  
+  - Review 1: Due in **1 day**  
+  - Review 2: Due in **6 days**  
+  - Review 3+: Due in $\text{Previous Interval} \times \text{Easiness Factor}$ (days)  
+  - Repetition counter increases; Easiness Factor increases by `0.1`.
+- **Hard (Fail):**  
+  - Resets repetitions to `0` and base interval to `1`.  
+  - Easiness Factor decreases by `0.2` (minimum `1.3`).  
+  - Scheduled for immediate review in **10 minutes**.
 
-Each flashcard maintains the following state schema:
+---
 
-```json
-{
-  "id": "arff_1",
-  "cat": "ARFF",
-  "q": "Question prompt text",
-  "a": "Answer verification text",
-  "interval": 0,
-  "reps": 0,
-  "efactor": 2.5,
-  "dueDate": 0
-}
+## Included Deck Categories
+
+Pre-loaded with 50 operational cards:
+
+- **ARFF:** Airport rescue, foam levels, aircraft hazards, and ICAO response rules.
+- **BA:** Breathing apparatus procedures, turnaround limits, and guideline drills.
+- **General:** Operational priorities, JESIP M/ETHANE, BLEVEs, and dynamic risk assessment.
+- **RTC:** Airbag distances, EV isolation, stabilization, and hydraulic tool tactics.
+- **Structural:** Flashover/backdraft indicators, CFBT gas cooling, and thermal balance.
+
+---
+
+## How to Use
+
+1. **Start Drill:** Tap **Start** on the title screen.
+2. **Select Discipline:** Filter cards via the top category bar or leave on **All**.
+3. **Flip Card:** Tap the card body or the **Flip** button to see the answer.
+4. **Rate Recall:**
+   - Swipe **Right** or tap **Easy** if remembered.
+   - Swipe **Left** or tap **Hard** to review again in 10 minutes.
+5. **Clear Queue:** Practice until the queue is finished. Use **Practice Ahead (Cram Mode)** to keep reviewing ahead of schedule.
+
+---
+
+## Data & Question Banks
+
+All options are on the title screen:
+
+- **Load Question Bank:** Add custom questions via JSON format:
+  ```json
+  [
+    {
+      "cat": "ARFF",
+      "q": "Question text here?",
+      "a": "Answer text here."
+    }
+  ]
