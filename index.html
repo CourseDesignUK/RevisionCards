@@ -177,6 +177,66 @@
       pointer-events: none;
     }
 
+    /* START DATE SCREEN OVERLAY */
+    #startDateScreen {
+      position: absolute;
+      inset: 0;
+      z-index: 60;
+      background: rgba(2, 6, 23, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    #startDateScreen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .date-card {
+      background: var(--q-surface);
+      border: 1px solid var(--q-border);
+      border-radius: var(--radius);
+      padding: 32px 24px;
+      text-align: center;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: var(--q-shadow);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+    }
+
+    .date-card h2 {
+      margin-bottom: 12px;
+      font-size: 1.3rem;
+      font-weight: 800;
+    }
+
+    .date-card p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+
+    .date-card input[type="date"] {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 24px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(0,0,0,0.5);
+      color: var(--text-main);
+      font-size: 1.1rem;
+      color-scheme: dark;
+      text-align: center;
+      outline: none;
+    }
+
     /* TITLE SCREEN OVERLAY */
     #titleScreen {
       position: absolute;
@@ -857,6 +917,16 @@
 
   <div id="bgLayer"></div>
 
+  <!-- START DATE SCREEN -->
+  <div id="startDateScreen" class="hidden">
+    <div class="date-card">
+      <h2>Set Program Start Date</h2>
+      <p>Questions unlock progressively based on the current program day.</p>
+      <input type="date" id="startDateInput" />
+      <button class="start-btn" id="btnSaveStartDate">Confirm</button>
+    </div>
+  </div>
+
   <!-- TITLE SCREEN -->
   <div id="titleScreen">
     <div class="title-header">
@@ -1166,64 +1236,65 @@
     };
 
     const INITIAL_DECK = [
-      { id: "arff_1", cat: "ARFF", q: "ICAO Critical Area: What does TCA stand for, and how is it defined?", a: "Theoretical Critical Area: The boundary area surrounding an aircraft fuselage within which fire must be controlled to safeguard occupants." },
-      { id: "arff_2", cat: "ARFF", q: "What is the standard maximum response time mandated by ICAO Annex 14 for the first responding vehicle to any point of the operational runway in optimum conditions?", a: "Not exceeding 2 minutes (and not exceeding 3 minutes to any other part of the movement area)." },
-      { id: "arff_3", cat: "ARFF", q: "What hazard is posed by aircraft carbon-composite structures following severe thermal degradation?", a: "Respirable aerosolized carbon fibres (diameter < 3 µm) and toxic off-gassing requiring full BA and particulate PPE." },
-      { id: "arff_4", cat: "ARFF", q: "What are the primary indicators of an uncontained aircraft high-energy wheel/brake fire?", a: "Extreme localized radiant heat, brake glow, tyre deflating through thermal fuse plugs, and risk of wheel rim fragmentation." },
-      { id: "arff_5", cat: "ARFF", q: "What angle of approach must responding personnel and appliances maintain relative to an aircraft wheel assembly?", a: "Fore or aft in line with the fuselage (inline with the tyre tread); never approach perpendicular to the axle due to wheel flange projectile hazards." },
-      { id: "arff_6", cat: "ARFF", q: "What is the defining operational rule regarding emergency slide deployment during active evacuation?", a: "Do not reposition vehicles or direct pressurized master streams into open doors or onto slide deployment paths." },
-      { id: "arff_7", cat: "ARFF", q: "What distinguishes ICAO Foam Performance Levels A, B, and C?", a: "Extinguishing efficiency and application rate requirements: Level C requires the lowest discharge rate (lowest water volume) due to superior burnback and extinction speed." },
-      { id: "arff_8", cat: "ARFF", q: "What primary hazard is encountered with hydrazine (H-70) leaks in military airframe incidents (e.g. F-16 EPU)? What PPE is mandatory?", a: "Highly toxic, hypergolic, carcinogenic liquid and vapour. Fully encapsulated chemical protective clothing and positive pressure BA are mandatory." },
-      { id: "arff_9", cat: "ARFF", q: "What is the critical initial tactical task during a three-dimensional running fuel fire under a wing root?", a: "Discharge dry chemical powder or complementary media simultaneously with foam application to knock down the 3D flame envelope while foam secures ground spill." },
-      { id: "arff_10", cat: "ARFF", q: "What visual indication signals that aircraft ballistic parachute recovery systems (CAPS/BRS) are present and dangerous?", a: "External warning placards indicating rocket-deployed parachute systems; rocket motor paths must be identified and avoided." },
+      { id: "arff_1", cat: "ARFF", day: 1, q: "ICAO Critical Area: What does TCA stand for, and how is it defined?", a: "Theoretical Critical Area: The boundary area surrounding an aircraft fuselage within which fire must be controlled to safeguard occupants." },
+      { id: "arff_2", cat: "ARFF", day: 1, q: "What is the standard maximum response time mandated by ICAO Annex 14 for the first responding vehicle to any point of the operational runway in optimum conditions?", a: "Not exceeding 2 minutes (and not exceeding 3 minutes to any other part of the movement area)." },
+      { id: "arff_3", cat: "ARFF", day: 2, q: "What hazard is posed by aircraft carbon-composite structures following severe thermal degradation?", a: "Respirable aerosolized carbon fibres (diameter < 3 µm) and toxic off-gassing requiring full BA and particulate PPE." },
+      { id: "arff_4", cat: "ARFF", day: 2, q: "What are the primary indicators of an uncontained aircraft high-energy wheel/brake fire?", a: "Extreme localized radiant heat, brake glow, tyre deflating through thermal fuse plugs, and risk of wheel rim fragmentation." },
+      { id: "arff_5", cat: "ARFF", day: 3, q: "What angle of approach must responding personnel and appliances maintain relative to an aircraft wheel assembly?", a: "Fore or aft in line with the fuselage (inline with the tyre tread); never approach perpendicular to the axle due to wheel flange projectile hazards." },
+      { id: "arff_6", cat: "ARFF", day: 3, q: "What is the defining operational rule regarding emergency slide deployment during active evacuation?", a: "Do not reposition vehicles or direct pressurized master streams into open doors or onto slide deployment paths." },
+      { id: "arff_7", cat: "ARFF", day: 4, q: "What distinguishes ICAO Foam Performance Levels A, B, and C?", a: "Extinguishing efficiency and application rate requirements: Level C requires the lowest discharge rate (lowest water volume) due to superior burnback and extinction speed." },
+      { id: "arff_8", cat: "ARFF", day: 4, q: "What primary hazard is encountered with hydrazine (H-70) leaks in military airframe incidents (e.g. F-16 EPU)? What PPE is mandatory?", a: "Highly toxic, hypergolic, carcinogenic liquid and vapour. Fully encapsulated chemical protective clothing and positive pressure BA are mandatory." },
+      { id: "arff_9", cat: "ARFF", day: 5, q: "What is the critical initial tactical task during a three-dimensional running fuel fire under a wing root?", a: "Discharge dry chemical powder or complementary media simultaneously with foam application to knock down the 3D flame envelope while foam secures ground spill." },
+      { id: "arff_10", cat: "ARFF", day: 5, q: "What visual indication signals that aircraft ballistic parachute recovery systems (CAPS/BRS) are present and dangerous?", a: "External warning placards indicating rocket-deployed parachute systems; rocket motor paths must be identified and avoided." },
 
-      { id: "ba_1", cat: "BA", q: "What does TOC stand for during BA entry control procedures?", a: "Time of Commitment: The exact time the BA team connects to air supply and enters the risk area." },
-      { id: "ba_2", cat: "BA", q: "How is the Turnaround Pressure calculated for a BA wearer under standard UK fire service guidance?", a: "Cylinder pressure at entry divided by 2, plus safety margin (half the working duration pressure)." },
-      { id: "ba_3", cat: "BA", q: "What is the operational purpose and mandatory activation pressure of a cylinder Low Pressure Warning Device (whistle/pneumatic gauge)?", a: "Warns the wearer that reserve capacity is reached; typically activates at 55 bar (± 5 bar)." },
-      { id: "ba_4", cat: "BA", q: "State the minimum crew size and mandatory communication linkage for BA team deployments in high-expansion foam environments.", a: "Minimum 2 personnel; must maintain physical contact or a continuous guide-line/telemetry link." },
-      { id: "ba_5", cat: "BA", q: "What protocol must be followed when a BA telemetry distress-to-loss signal or electronic PASS sounds?", a: "Immediate rapid intervention: Deploy the BA Emergency Team (standby crew) equipped with emergency air supply and guide-lines." },
-      { id: "ba_6", cat: "BA", q: "What is the core distinction between Stage 1 and Stage 2 BA Entry Control?", a: "Stage 1: Up to 1 BA entry point and 1 team deployed. Stage 2: Multiple entry points, large crews, operational duration extensions, and dedicated Entry Control Officers." },
-      { id: "ba_7", cat: "BA", q: "What is the tactical function of a Personal Line (branch line) attached to a main BA Guideline?", a: "Allows wearers to leave the main guideline by up to 6 metres to search compartments while maintaining continuous mechanical return reference." },
-      { id: "ba_8", cat: "BA", q: "What are the immediate individual actions if a facepiece seal fails or supply hose ruptures in an IDLH atmosphere?", a: "Depress manual bypass valve to maintain positive chamber pressure, alert crew partner immediately, and initiate emergency withdrawal along route." },
-      { id: "ba_9", cat: "BA", q: "Under what specific circumstance can a BA team break physical or tactile contact during a compartment search?", a: "Only when operating with an intact, deployed guideline, within line-of-sight and verbal contact under clear visibility." },
-      { id: "ba_10", cat: "BA", q: "What does DSU stand for in the context of personal BA apparatus?", a: "Distress Signal Unit (motion sensor sounding local audible/visual distress alarm if wearer is motionless for ~30 seconds)." },
+      { id: "ba_1", cat: "BA", day: 1, q: "What does TOC stand for during BA entry control procedures?", a: "Time of Commitment: The exact time the BA team connects to air supply and enters the risk area." },
+      { id: "ba_2", cat: "BA", day: 1, q: "How is the Turnaround Pressure calculated for a BA wearer under standard UK fire service guidance?", a: "Cylinder pressure at entry divided by 2, plus safety margin (half the working duration pressure)." },
+      { id: "ba_3", cat: "BA", day: 2, q: "What is the operational purpose and mandatory activation pressure of a cylinder Low Pressure Warning Device (whistle/pneumatic gauge)?", a: "Warns the wearer that reserve capacity is reached; typically activates at 55 bar (± 5 bar)." },
+      { id: "ba_4", cat: "BA", day: 2, q: "State the minimum crew size and mandatory communication linkage for BA team deployments in high-expansion foam environments.", a: "Minimum 2 personnel; must maintain physical contact or a continuous guide-line/telemetry link." },
+      { id: "ba_5", cat: "BA", day: 3, q: "What protocol must be followed when a BA telemetry distress-to-loss signal or electronic PASS sounds?", a: "Immediate rapid intervention: Deploy the BA Emergency Team (standby crew) equipped with emergency air supply and guide-lines." },
+      { id: "ba_6", cat: "BA", day: 3, q: "What is the core distinction between Stage 1 and Stage 2 BA Entry Control?", a: "Stage 1: Up to 1 BA entry point and 1 team deployed. Stage 2: Multiple entry points, large crews, operational duration extensions, and dedicated Entry Control Officers." },
+      { id: "ba_7", cat: "BA", day: 4, q: "What is the tactical function of a Personal Line (branch line) attached to a main BA Guideline?", a: "Allows wearers to leave the main guideline by up to 6 metres to search compartments while maintaining continuous mechanical return reference." },
+      { id: "ba_8", cat: "BA", day: 4, q: "What are the immediate individual actions if a facepiece seal fails or supply hose ruptures in an IDLH atmosphere?", a: "Depress manual bypass valve to maintain positive chamber pressure, alert crew partner immediately, and initiate emergency withdrawal along route." },
+      { id: "ba_9", cat: "BA", day: 5, q: "Under what specific circumstance can a BA team break physical or tactile contact during a compartment search?", a: "Only when operating with an intact, deployed guideline, within line-of-sight and verbal contact under clear visibility." },
+      { id: "ba_10", cat: "BA", day: 5, q: "What does DSU stand for in the context of personal BA apparatus?", a: "Distress Signal Unit (motion sensor sounding local audible/visual distress alarm if wearer is motionless for ~30 seconds)." },
 
-      { id: "gen_1", cat: "General", q: "State the 3 universal operational priorities at any incident.", a: "1. Life Safety\n2. Incident Stabilization\n3. Property and Environmental Protection" },
-      { id: "gen_2", cat: "General", q: "Under the UK Joint Emergency Services Interoperability Principles (JESIP), what does the M/ETHANE model mnemonic stand for?", a: "M - Major incident declared?\nE - Exact location\nT - Type of incident\nH - Hazards\nA - Access & egress\nN - Number of casualties\nE - Emergency services present/required" },
-      { id: "gen_3", cat: "General", q: "What is the primary function of an inner cordon at a hazardous or structural incident?", a: "To establish an exclusion zone that restricts access strictly to specialist emergency response personnel with appropriate PPE." },
-      { id: "gen_4", cat: "General", q: "What is the tactical difference between Offensive and Defensive operational modes?", a: "Offensive: Committing resources inside the risk area to control the source. Defensive: Operating from external boundaries to prevent escalation and protect exposures." },
-      { id: "gen_5", cat: "General", q: "What does the Dynamic Risk Assessment (DRA) continuous cycle require of incident commanders?", a: "Initial assessment of hazards -> evaluate risks and control measures -> execute plan -> monitor results and reassess as conditions shift." },
-      { id: "gen_6", cat: "General", q: "What is the definition of BLEVE?", a: "Boiling Liquid Expanding Vapour Explosion: Catastrophic structural rupture of a pressurized vessel containing liquid above its atmospheric boiling point." },
-      { id: "gen_7", cat: "General", q: "In hazmat classification, what is the UN Hazard Class for Flammable Liquids?", a: "Class 3." },
-      { id: "gen_8", cat: "General", q: "What is the safe approach distance and protocol when encountering downed high-voltage overhead utility lines?", a: "Minimum 10-15 metre exclusion perimeter; treat all conductors as live until certified isolated and earthed by network operators." },
-      { id: "gen_9", cat: "General", q: "What are the key elements of an Incident Commander's 'Ten-Pump' or sectorization plan?", a: "Splitting an expanding scene geographically (Sectors 1, 2, 3, 4) and functionally (e.g. Search, Water Supply, Logistics)." },
-      { id: "gen_10", cat: "General", q: "What is the primary physiological mechanism of Heat Exhaustion versus Heat Stroke?", a: "Heat exhaustion: Excessive water/salt depletion with normal to moderately elevated core temp. Heat stroke: Failure of thermoregulatory mechanisms, core temp > 40°C, neuro impairment; life-threatening." },
+      { id: "gen_1", cat: "General", day: 1, q: "State the 3 universal operational priorities at any incident.", a: "1. Life Safety\n2. Incident Stabilization\n3. Property and Environmental Protection" },
+      { id: "gen_2", cat: "General", day: 1, q: "Under the UK Joint Emergency Services Interoperability Principles (JESIP), what does the M/ETHANE model mnemonic stand for?", a: "M - Major incident declared?\nE - Exact location\nT - Type of incident\nH - Hazards\nA - Access & egress\nN - Number of casualties\nE - Emergency services present/required" },
+      { id: "gen_3", cat: "General", day: 2, q: "What is the primary function of an inner cordon at a hazardous or structural incident?", a: "To establish an exclusion zone that restricts access strictly to specialist emergency response personnel with appropriate PPE." },
+      { id: "gen_4", cat: "General", day: 2, q: "What is the tactical difference between Offensive and Defensive operational modes?", a: "Offensive: Committing resources inside the risk area to control the source. Defensive: Operating from external boundaries to prevent escalation and protect exposures." },
+      { id: "gen_5", cat: "General", day: 3, q: "What does the Dynamic Risk Assessment (DRA) continuous cycle require of incident commanders?", a: "Initial assessment of hazards -> evaluate risks and control measures -> execute plan -> monitor results and reassess as conditions shift." },
+      { id: "gen_6", cat: "General", day: 3, q: "What is the definition of BLEVE?", a: "Boiling Liquid Expanding Vapour Explosion: Catastrophic structural rupture of a pressurized vessel containing liquid above its atmospheric boiling point." },
+      { id: "gen_7", cat: "General", day: 4, q: "In hazmat classification, what is the UN Hazard Class for Flammable Liquids?", a: "Class 3." },
+      { id: "gen_8", cat: "General", day: 4, q: "What is the safe approach distance and protocol when encountering downed high-voltage overhead utility lines?", a: "Minimum 10-15 metre exclusion perimeter; treat all conductors as live until certified isolated and earthed by network operators." },
+      { id: "gen_9", cat: "General", day: 5, q: "What are the key elements of an Incident Commander's 'Ten-Pump' or sectorization plan?", a: "Splitting an expanding scene geographically (Sectors 1, 2, 3, 4) and functionally (e.g. Search, Water Supply, Logistics)." },
+      { id: "gen_10", cat: "General", day: 5, q: "What is the primary physiological mechanism of Heat Exhaustion versus Heat Stroke?", a: "Heat exhaustion: Excessive water/salt depletion with normal to moderately elevated core temp. Heat stroke: Failure of thermoregulatory mechanisms, core temp > 40°C, neuro impairment; life-threatening." },
 
-      { id: "rtc_1", cat: "RTC", q: "What are the standard dimensions for vehicle safety zones around undeployed airbags (5-10-20 rule)?", a: "5 inches from side airbags / curtains, 10 inches from driver frontal airbag, 20 inches from passenger frontal airbag." },
-      { id: "rtc_2", cat: "RTC", q: "What is primary stabilization versus secondary stabilization at an RTC?", a: "Primary: Chocks and blocks to immediately arrest gross movement. Secondary: Struts, winches, and hydraulic tensioners to lock suspension and stabilize vehicle geometry completely." },
-      { id: "rtc_3", cat: "RTC", q: "Why is 12V auxiliary battery disconnection critical on Electric Vehicles (EVs) during extrication?", a: "Disconnecting the 12V battery drops the high-voltage contactors (relays), isolating the 400V-800V high-voltage traction pack from the rest of the vehicle wiring." },
-      { id: "rtc_4", cat: "RTC", q: "Where are pyrotechnic seatbelt pretensioners and gas inflators typically located, and what is the cutting rule?", a: "Located in B-pillars, C-pillars, and seat bases. Rule: Peel and inspect trim before making any structural cuts; never cut into pressurized gas inflator canisters." },
-      { id: "rtc_5", cat: "RTC", q: "What color high-voltage cabling identifies traction voltage circuitry in hybrid and electric passenger vehicles?", a: "Bright Orange." },
-      { id: "rtc_6", cat: "RTC", q: "What is the purpose of managing vehicle glass prior to hydraulic cutting or spreading?", a: "To eliminate spontaneous fragmentation under mechanical load, prevent airborne razor-sharp particles, and protect airway of casualties and crew." },
-      { id: "rtc_7", cat: "RTC", q: "Explain the mechanical risk of Boron / Ultra-High-Strength Steel (UHSS) in modern vehicle structures during rescue.", a: "UHSS resists hydraulic shear blades, risking cutter blade deflection, structural snap, or tool stall; requires strategic cut placement outside reinforced pillars." },
-      { id: "rtc_8", cat: "RTC", q: "What does 'Dashboard Roll' versus 'Dashboard Lift' refer to in RTC space creation?", a: "Roll: Using a hydraulic ram off the B-pillar to push the lower A-pillar forward in an arc. Lift: Relieving lower structural ties and vertical jacking along the door hinge axis." },
-      { id: "rtc_9", cat: "RTC", q: "What thermal runaway indication requires continuous immersion or long-term high-volume water cooling on an EV?", a: "Off-gassing with jet whistling noises, rapid thermal rises on thermal imaging, sparks, or directional vapor plumes from the underfloor pack." },
-      { id: "rtc_10", cat: "RTC", q: "What is the Golden Hour concept in RTC trauma management?", a: "The critical window within 60 minutes from time of injury to definitive surgical care in an operating theatre to maximize polytrauma survival." },
+      { id: "rtc_1", cat: "RTC", day: 1, q: "What are the standard dimensions for vehicle safety zones around undeployed airbags (5-10-20 rule)?", a: "5 inches from side airbags / curtains, 10 inches from driver frontal airbag, 20 inches from passenger frontal airbag." },
+      { id: "rtc_2", cat: "RTC", day: 1, q: "What is primary stabilization versus secondary stabilization at an RTC?", a: "Primary: Chocks and blocks to immediately arrest gross movement. Secondary: Struts, winches, and hydraulic tensioners to lock suspension and stabilize vehicle geometry completely." },
+      { id: "rtc_3", cat: "RTC", day: 2, q: "Why is 12V auxiliary battery disconnection critical on Electric Vehicles (EVs) during extrication?", a: "Disconnecting the 12V battery drops the high-voltage contactors (relays), isolating the 400V-800V high-voltage traction pack from the rest of the vehicle wiring." },
+      { id: "rtc_4", cat: "RTC", day: 2, q: "Where are pyrotechnic seatbelt pretensioners and gas inflators typically located, and what is the cutting rule?", a: "Located in B-pillars, C-pillars, and seat bases. Rule: Peel and inspect trim before making any structural cuts; never cut into pressurized gas inflator canisters." },
+      { id: "rtc_5", cat: "RTC", day: 3, q: "What color high-voltage cabling identifies traction voltage circuitry in hybrid and electric passenger vehicles?", a: "Bright Orange." },
+      { id: "rtc_6", cat: "RTC", day: 3, q: "What is the purpose of managing vehicle glass prior to hydraulic cutting or spreading?", a: "To eliminate spontaneous fragmentation under mechanical load, prevent airborne razor-sharp particles, and protect airway of casualties and crew." },
+      { id: "rtc_7", cat: "RTC", day: 4, q: "Explain the mechanical risk of Boron / Ultra-High-Strength Steel (UHSS) in modern vehicle structures during rescue.", a: "UHSS resists hydraulic shear blades, risking cutter blade deflection, structural snap, or tool stall; requires strategic cut placement outside reinforced pillars." },
+      { id: "rtc_8", cat: "RTC", day: 4, q: "What does 'Dashboard Roll' versus 'Dashboard Lift' refer to in RTC space creation?", a: "Roll: Using a hydraulic ram off the B-pillar to push the lower A-pillar forward in an arc. Lift: Relieving lower structural ties and vertical jacking along the door hinge axis." },
+      { id: "rtc_9", cat: "RTC", day: 5, q: "What thermal runaway indication requires continuous immersion or long-term high-volume water cooling on an EV?", a: "Off-gassing with jet whistling noises, rapid thermal rises on thermal imaging, sparks, or directional vapor plumes from the underfloor pack." },
+      { id: "rtc_10", cat: "RTC", day: 5, q: "What is the Golden Hour concept in RTC trauma management?", a: "The critical window within 60 minutes from time of injury to definitive surgical care in an operating theatre to maximize polytrauma survival." },
 
-      { id: "str_1", cat: "Structural", q: "What are the key differences in signs between Flashover and Backdraft?", a: "Flashover: High heat, free-burning turbulent flames rolling across ceiling (rollover). Backdraft: Oxygen-depleted closed space, pulsing yellow-grey smoke under pressure, stained rattling glass, inward air sucking." },
-      { id: "str_2", cat: "Structural", q: "What is the primary function of short pulsed branches during gas cooling in Compartment Fire Behavior Training (CFBT)?", a: "Produce fine water droplets that vaporize in the hot gas layer, cooling pyrolysis gases without impacting compartment boundary surfaces or causing thermal collapse." },
-      { id: "str_3", cat: "Structural", q: "What is the definition of the Neutral Plane in a compartment fire?", a: "The horizontal boundary separating the hot, pressurized upper layer of smoke/gases from the lower layer of incoming cool air." },
-      { id: "str_4", cat: "Structural", q: "What structural failure risk does unprotected structural steel present under typical flashover temperatures (500°C - 600°C)?", a: "Steel loses approximately 50% of its yield strength at 550°C and expands longitudinally, exerting lateral thrust on load-bearing masonry." },
-      { id: "str_5", cat: "Structural", q: "What is Positive Pressure Ventilation (PPV) tactical cooling versus PPV tactical clearing?", a: "Tactical cooling: Introducing forced airflow to lower internal temperatures prior to attack. Tactical clearing: Forcing smoke and steam out through designated exhaust openings during/after knockdown." },
-      { id: "str_6", cat: "Structural", q: "What is the critical rule regarding flow paths in compartment fires?", a: "Every fire requires an inlet (air) and outlet (exhaust). Uncontrolled ventilation openings without simultaneous branch suppression create high-velocity flow paths that accelerate fire growth." },
-      { id: "str_7", cat: "Structural", q: "What failure mechanism makes pre-engineered lightweight wooden trusses hazardous during structural fires?", a: "Punched metal gusset plates detach rapidly when wood chars (charring ~0.6 mm/min), causing total roof/floor assembly collapse without progressive sag warning within 5-10 minutes." },
-      { id: "str_8", cat: "Structural", q: "Define 'Thermal Inversion' or 'Disrupting the Thermal Balance' inside a burning compartment.", a: "Applying excessive water into the upper layer improperly, causing the hot smoke/steam mixture to cool unevenly, lose buoyancy, and force down onto the floor over firefighters." },
-      { id: "str_9", cat: "Structural", q: "What visual cues indicate load-bearing masonry wall stability is compromised?", a: "Stepped diagonal cracking along mortar joints, bulging/bowing sections, smoke pushing through masonry faces, or shifting lintels over window openings." },
-      { id: "str_10", cat: "Structural", q: "What is the operational purpose of an exterior 'Pencil' or 'Hit from the Yard' transitional attack?", a: "Discharge a straight solid stream through an exterior window against the ceiling to rapidly cool the compartment interior prior to offensive internal entry." }
+      { id: "str_1", cat: "Structural", day: 1, q: "What are the key differences in signs between Flashover and Backdraft?", a: "Flashover: High heat, free-burning turbulent flames rolling across ceiling (rollover). Backdraft: Oxygen-depleted closed space, pulsing yellow-grey smoke under pressure, stained rattling glass, inward air sucking." },
+      { id: "str_2", cat: "Structural", day: 1, q: "What is the primary function of short pulsed branches during gas cooling in Compartment Fire Behavior Training (CFBT)?", a: "Produce fine water droplets that vaporize in the hot gas layer, cooling pyrolysis gases without impacting compartment boundary surfaces or causing thermal collapse." },
+      { id: "str_3", cat: "Structural", day: 2, q: "What is the definition of the Neutral Plane in a compartment fire?", a: "The horizontal boundary separating the hot, pressurized upper layer of smoke/gases from the lower layer of incoming cool air." },
+      { id: "str_4", cat: "Structural", day: 2, q: "What structural failure risk does unprotected structural steel present under typical flashover temperatures (500°C - 600°C)?", a: "Steel loses approximately 50% of its yield strength at 550°C and expands longitudinally, exerting lateral thrust on load-bearing masonry." },
+      { id: "str_5", cat: "Structural", day: 3, q: "What is Positive Pressure Ventilation (PPV) tactical cooling versus PPV tactical clearing?", a: "Tactical cooling: Introducing forced airflow to lower internal temperatures prior to attack. Tactical clearing: Forcing smoke and steam out through designated exhaust openings during/after knockdown." },
+      { id: "str_6", cat: "Structural", day: 3, q: "What is the critical rule regarding flow paths in compartment fires?", a: "Every fire requires an inlet (air) and outlet (exhaust). Uncontrolled ventilation openings without simultaneous branch suppression create high-velocity flow paths that accelerate fire growth." },
+      { id: "str_7", cat: "Structural", day: 4, q: "What failure mechanism makes pre-engineered lightweight wooden trusses hazardous during structural fires?", a: "Punched metal gusset plates detach rapidly when wood chars (charring ~0.6 mm/min), causing total roof/floor assembly collapse without progressive sag warning within 5-10 minutes." },
+      { id: "str_8", cat: "Structural", day: 4, q: "Define 'Thermal Inversion' or 'Disrupting the Thermal Balance' inside a burning compartment.", a: "Applying excessive water into the upper layer improperly, causing the hot smoke/steam mixture to cool unevenly, lose buoyancy, and force down onto the floor over firefighters." },
+      { id: "str_9", cat: "Structural", day: 5, q: "What visual cues indicate load-bearing masonry wall stability is compromised?", a: "Stepped diagonal cracking along mortar joints, bulging/bowing sections, smoke pushing through masonry faces, or shifting lintels over window openings." },
+      { id: "str_10", cat: "Structural", day: 5, q: "What is the operational purpose of an exterior 'Pencil' or 'Hit from the Yard' transitional attack?", a: "Discharge a straight solid stream through an exterior window against the ceiling to rapidly cool the compartment interior prior to offensive internal entry." }
     ];
 
-    const STORAGE_KEY = "sr_flashcards_deck_v14";
+    const STORAGE_KEY = "sr_flashcards_deck_v15";
     const BACKUP_STORAGE_KEY = "sr_flashcards_backup_snapshot";
+    const START_DATE_KEY = "sr_program_start_date";
 
     let deck = [];
     let currentCat = "All";
@@ -1232,6 +1303,8 @@
     let isFlipped = false;
     let reviewAheadMode = false;
     let fileImportMode = "bank";
+    let programStartDate = null;
+    let currentProgramDay = 1;
 
     let startX = 0;
     let startY = 0;
@@ -1242,6 +1315,7 @@
 
     const bgLayer = document.getElementById("bgLayer");
     const titleScreen = document.getElementById("titleScreen");
+    const startDateScreen = document.getElementById("startDateScreen");
     const infoModal = document.getElementById("infoModal");
     const cardContainer = document.getElementById("cardContainer");
     const emptyState = document.getElementById("emptyState");
@@ -1265,6 +1339,8 @@
     const easyIntervalLabel = document.getElementById("easyIntervalLabel");
 
     const btnStartTraining = document.getElementById("btnStartTraining");
+    const btnSaveStartDate = document.getElementById("btnSaveStartDate");
+    const startDateInput = document.getElementById("startDateInput");
     const btnOpenHowTo = document.getElementById("btnOpenHowTo");
     const btnTitleInfo = document.getElementById("btnTitleInfo");
     const btnAppInfo = document.getElementById("btnAppInfo");
@@ -1288,6 +1364,36 @@
       bgLayer.style.backgroundImage = `url("${bg}")`;
     }
 
+    function initProgramDate() {
+      programStartDate = localStorage.getItem(START_DATE_KEY);
+      if (!programStartDate) {
+        startDateScreen.classList.remove("hidden");
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        startDateInput.value = `${yyyy}-${mm}-${dd}`;
+      } else {
+        calculateProgramDay();
+      }
+    }
+
+    btnSaveStartDate.addEventListener("click", () => {
+      if (!startDateInput.value) return;
+      programStartDate = startDateInput.value;
+      localStorage.setItem(START_DATE_KEY, programStartDate);
+      startDateScreen.classList.add("hidden");
+      calculateProgramDay();
+      filterDeck();
+    });
+
+    function calculateProgramDay() {
+      const start = new Date(programStartDate).setHours(0,0,0,0);
+      const now = new Date().setHours(0,0,0,0);
+      const diffDays = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+      currentProgramDay = Math.max(1, diffDays + 1);
+    }
+
     function initStorage() {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
@@ -1305,6 +1411,7 @@
     function seedDeck() {
       return INITIAL_DECK.map(item => ({
         ...item,
+        day: item.day || 1,
         interval: 0,
         reps: 0,
         efactor: 2.5,
@@ -1339,21 +1446,22 @@
 
     function filterDeck() {
       const now = Date.now();
-      const filtered = deck.filter(c => currentCat === "All" || c.cat === currentCat);
+      const unlockedDeck = deck.filter(c => (c.day || 1) <= currentProgramDay);
+      const filtered = unlockedDeck.filter(c => currentCat === "All" || c.cat === currentCat);
       const strictlyDue = filtered.filter(c => c.dueDate <= now);
 
       if (strictlyDue.length > 0) {
         reviewAheadMode = false;
         modeTag.style.display = "none";
         activeQueue = strictlyDue.sort((a, b) => a.dueDate - b.dueDate);
-        deckStats.textContent = `Due: ${activeQueue.length} / ${filtered.length}`;
+        deckStats.textContent = `Due: ${activeQueue.length} / ${filtered.length} (Day ${currentProgramDay})`;
       } else if (reviewAheadMode) {
         modeTag.style.display = "block";
         activeQueue = [...filtered].sort((a, b) => a.dueDate - b.dueDate);
         deckStats.textContent = `Cram: ${activeQueue.length} / ${filtered.length}`;
       } else {
         activeQueue = [];
-        deckStats.textContent = `Due: 0 / ${filtered.length}`;
+        deckStats.textContent = `Due: 0 / ${filtered.length} (Day ${currentProgramDay})`;
       }
 
       if (activeQueue.length > 0) {
@@ -1374,7 +1482,7 @@
           const waitTime = earliestCard.dueDate - now;
           emptyMsg.textContent = `Queue cleared. Autosaved locally. Next spaced item due in ${formatTimeRemaining(waitTime)}.`;
         } else {
-          emptyMsg.textContent = "No cards available in this category.";
+          emptyMsg.textContent = "No cards available in this category for the current day.";
         }
         updateBackground(currentCat);
       }
@@ -1699,6 +1807,7 @@
                 deck.push({
                   id: item.id || `custom_${Date.now()}_${index}`,
                   cat: item.cat || "General",
+                  day: item.day || 1,
                   q: item.q,
                   a: item.a,
                   interval: item.interval || 0,
@@ -1721,6 +1830,7 @@
       reader.readAsText(file);
     });
 
+    initProgramDate();
     initStorage();
     updateBackground(currentCat);
     filterDeck();
