@@ -1,70 +1,52 @@
-# Firefighter Spaced Repetition (Flashcards SR)
+# Firefighter Spaced Repetition
 
-A standalone, mobile-first Progressive Web App (PWA) built for high-retention firefighting revision. Uses a modified SuperMemo SM-2 algorithm to schedule reviews locally in the browser with zero external dependencies.
+A single-file Progressive Web Application (PWA) designed for high-retention spaced repetition training. Engineered for firefighting disciplines including ARFF, Breathing Apparatus (BA), General Operations, Road Traffic Collisions (RTC), and Structural Firefighting.
 
----
+## Core Features
 
-## Features
+*   **Progressive 100-Day Curriculum:** Cards are mapped to specific days (1 to 100). The user sets a program start date on initial launch; the system calculates the current day and selectively unlocks new material daily.
+*   **Spaced Repetition Engine:** Built on a modified SuperMemo-2 (SM-2) algorithm. Recall quality dictates future intervals (base steps of 1 day and 6 days, scaling dynamically via an evolving Easiness Factor).
+*   **Gesture-Based Interface:** Hardware-accelerated swipe mechanics. Swipe right for "Easy" (graduates card) or swipe left for "Hard" (resets interval to a 10-minute penalty queue).
+*   **Text-to-Speech (TTS):** Integrated Web Speech API for automated read-aloud of questions and answers.
+*   **Offline PWA Architecture:** Zero external dependencies. Embedded service worker and manifest allow native home-screen installation. State autosaves to local storage.
+*   **Data Portability:** JSON import/export functionality for complete state backups, history restoration, and custom question bank injection.
 
-- **Spaced Repetition:** Automatic review scheduling based on recall difficulty.
-- **Single-File Architecture:** HTML, CSS, JavaScript, manifest, and SVG assets in one file.
-- **Gesture Controls:** Touch swipe (left for Hard, right for Easy) and 3D card flipping.
-- **Speech & Audio:** Optional auto text-to-speech for cards and audio fanfare on queue completion.
-- **Local Persistence:** Automatic saves to `localStorage` plus manual JSON backup/restore.
-- **Portrait Enforced:** Built-in lock overlay for mobile displays.
+## Usage Instructions
 
----
+### Initialization
+Load the `index.html` file in a modern browser. Add to the mobile home screen to enable standalone PWA mode. Upon first launch, the system prompts for a program start date. This establishes the baseline for the progressive daily unlock system.
 
-## The Spaced Repetition Logic
+### Controls
+*   **Tap / Click Card:** Flips the card between question and answer faces.
+*   **Swipe Right:** Logs "Easy". Extends the review interval.
+*   **Swipe Left:** Logs "Hard". Drops the card into the immediate review queue.
+*   **Category Bar:** Filters the active deck by subject matter.
+*   **Practice Ahead (Cram Mode):** Bypasses the SM-2 interval timer to allow continuous review of unlocked cards without affecting future spaced repetition intervals.
 
-Cards are rated using two options:
+### Data Management
+Use the Title Screen to manage data:
+*   **Export Data:** Downloads a JSON snapshot of the current deck, including SM-2 intervals and repetitions.
+*   **Restore Data:** Overwrites the current state with a previously exported JSON backup.
+*   **Load Question Bank:** Merges new questions into the existing deck without overwriting current progress.
 
-- **Easy (Pass):**  
-  - Review 1: Due in **1 day**  
-  - Review 2: Due in **6 days**  
-  - Review 3+: Due in $\text{Previous Interval} \times \text{Easiness Factor}$ (days)  
-  - Repetition counter increases; Easiness Factor increases by `0.1`.
-- **Hard (Fail):**  
-  - Resets repetitions to `0` and base interval to `1`.  
-  - Easiness Factor decreases by `0.2` (minimum `1.3`).  
-  - Scheduled for immediate review in **10 minutes**.
+## Custom Question Bank Format
 
----
+To import custom question sets, format the JSON payload as an array of objects. Note the `day` integer parameter controls the progressive unlock schedule.
 
-## Included Deck Categories
-
-Pre-loaded with 50 operational cards:
-
-- **ARFF:** Airport rescue, foam levels, aircraft hazards, and ICAO response rules.
-- **BA:** Breathing apparatus procedures, turnaround limits, and guideline drills.
-- **General:** Operational priorities, JESIP M/ETHANE, BLEVEs, and dynamic risk assessment.
-- **RTC:** Airbag distances, EV isolation, stabilization, and hydraulic tool tactics.
-- **Structural:** Flashover/backdraft indicators, CFBT gas cooling, and thermal balance.
-
----
-
-## How to Use
-
-1. **Start Drill:** Tap **Start** on the title screen.
-2. **Select Discipline:** Filter cards via the top category bar or leave on **All**.
-3. **Flip Card:** Tap the card body or the **Flip** button to see the answer.
-4. **Rate Recall:**
-   - Swipe **Right** or tap **Easy** if remembered.
-   - Swipe **Left** or tap **Hard** to review again in 10 minutes.
-5. **Clear Queue:** Practice until the queue is finished. Use **Practice Ahead (Cram Mode)** to keep reviewing ahead of schedule.
-
----
-
-## Data & Question Banks
-
-All options are on the title screen:
-
-- **Load Question Bank:** Add custom questions via JSON format:
-  ```json
-  [
-    {
-      "cat": "ARFF",
-      "q": "Question text here?",
-      "a": "Answer text here."
-    }
-  ]
+```json
+[
+  {
+    "id": "custom_id_001",
+    "cat": "ARFF",
+    "day": 1,
+    "q": "What is the maximum response time mandated by ICAO Annex 14?",
+    "a": "Not exceeding 2 minutes in optimum conditions."
+  },
+  {
+    "id": "custom_id_002",
+    "cat": "Structural",
+    "day": 2,
+    "q": "Define the Neutral Plane.",
+    "a": "The horizontal boundary separating the hot, pressurized upper layer of smoke from the lower layer of incoming cool air."
+  }
+]
