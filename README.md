@@ -1,52 +1,54 @@
-# Firefighter Spaced Repetition
+# Spaced Repetition Flashcards PWA
 
-A single-file Progressive Web Application (PWA) designed for high-retention spaced repetition training. Engineered for firefighting disciplines including ARFF, Breathing Apparatus (BA), General Operations, Road Traffic Collisions (RTC), and Structural Firefighting.
+A standalone, offline-first Progressive Web App (PWA) delivering a spaced repetition flashcard engine. Built in pure HTML5, CSS3, and modern vanilla JavaScript with no external dependencies or build pipelines.
 
-## Core Features
+---
 
-*   **Progressive 100-Day Curriculum:** Cards are mapped to specific days (1 to 100). The user sets a program start date on initial launch; the system calculates the current day and selectively unlocks new material daily.
-*   **Spaced Repetition Engine:** Built on a modified SuperMemo-2 (SM-2) algorithm. Recall quality dictates future intervals (base steps of 1 day and 6 days, scaling dynamically via an evolving Easiness Factor).
-*   **Gesture-Based Interface:** Hardware-accelerated swipe mechanics. Swipe right for "Easy" (graduates card) or swipe left for "Hard" (resets interval to a 10-minute penalty queue).
-*   **Text-to-Speech (TTS):** Integrated Web Speech API for automated read-aloud of questions and answers.
-*   **Offline PWA Architecture:** Zero external dependencies. Embedded service worker and manifest allow native home-screen installation. State autosaves to local storage.
-*   **Data Portability:** JSON import/export functionality for complete state backups, history restoration, and custom question bank injection.
+## Core Architecture
 
-## Usage Instructions
+- **Single-File Execution:** Complete UI, styles, logic, service worker registration, and procedural SVG media assets contained within a single `index.html`.
+- **Offline & Standalone Operation:** Service Worker registration via inline Blob URL caching assets for air-gapped usability; configured with full PWA web manifest metadata.
+- **Adaptive Display Engine:** Dynamic layout handling portrait orientation lock overlays, device safe areas (`env(safe-area-inset-*)`), and procedural category-specific vector backgrounds.
+- **Touch Gesture System:** Hardware-accelerated 3D card physics using pointer and touch event listeners with directional swipe resolution, damping, and tactile haptic feedback.
+- **Speech Synthesis:** Integrated Web Speech API (`SpeechSynthesisUtterance`) support for automated read-aloud functionality across British English and standard system voices.
 
-### Initialization
-Load the `index.html` file in a modern browser. Add to the mobile home screen to enable standalone PWA mode. Upon first launch, the system prompts for a program start date. This establishes the baseline for the progressive daily unlock system.
+---
 
-### Controls
-*   **Tap / Click Card:** Flips the card between question and answer faces.
-*   **Swipe Right:** Logs "Easy". Extends the review interval.
-*   **Swipe Left:** Logs "Hard". Drops the card into the immediate review queue.
-*   **Category Bar:** Filters the active deck by subject matter.
-*   **Practice Ahead (Cram Mode):** Bypasses the SM-2 interval timer to allow continuous review of unlocked cards without affecting future spaced repetition intervals.
+## Spaced Repetition Algorithm
 
-### Data Management
-Use the Title Screen to manage data:
-*   **Export Data:** Downloads a JSON snapshot of the current deck, including SM-2 intervals and repetitions.
-*   **Restore Data:** Overwrites the current state with a previously exported JSON backup.
-*   **Load Question Bank:** Merges new questions into the existing deck without overwriting current progress.
+The retention scheduling engine implements a modified SuperMemo SM-2 algorithm:
 
-## Custom Question Bank Format
+1. **Repetition Progression:**
+   - **Repetition 0:** Initial review schedule set to 1 day.
+   - **Repetition 1:** Second successful graduation step set to 6 days.
+   - **Repetition $\ge 2$:** Interval scales exponentially:
+     $$I(n) = \text{round}(I(n - 1) \times EF)$$
+2. **Easiness Factor (EF):**
+   - Base initial factor: `2.5`
+   - **Easy Review:** Increments EF by `+0.1` and advances repetition count.
+   - **Hard Review (Lapse):** Resets repetition count to `0`, sets interval to `1`, penalizes EF by `-0.2` (bounded at a minimum floor of `1.3`), and re-queues the card for a 10-minute retry interval.
+3. **Progressive Program Unlocking:**
+   - Cards map to sequential `day` properties.
+   - Content unlocks relative to a configurable program start date stored in local persistence:
+     $$\text{Program Day} = \max\left(1, \left\lfloor \frac{\text{Current Date} - \text{Start Date}}{86,400,000} \right\rfloor + 1\right)$$
 
-To import custom question sets, format the JSON payload as an array of objects. Note the `day` integer parameter controls the progressive unlock schedule.
+---
+
+## Question Bank Schema
+
+Custom question sets can be imported via JSON using either a raw array or a container object (`questions` or `deck` key):
 
 ```json
 [
   {
-    "id": "custom_id_001",
-    "cat": "ARFF",
+    "id": "gen_custom_01",
+    "cat": "General",
     "day": 1,
-    "q": "What is the maximum response time mandated by ICAO Annex 14?",
-    "a": "Not exceeding 2 minutes in optimum conditions."
-  },
-  {
-    "id": "custom_id_002",
-    "cat": "Structural",
-    "day": 2,
-    "q": "Define the Neutral Plane.",
-    "a": "The horizontal boundary separating the hot, pressurized upper layer of smoke from the lower layer of incoming cool air."
+    "q": "What is the capital of France?",
+    "a": "Paris",
+    "interval": 0,
+    "reps": 0,
+    "efactor": 2.5,
+    "dueDate": 0
   }
 ]
